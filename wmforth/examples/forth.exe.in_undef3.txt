@@ -1,0 +1,32 @@
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+
+: printustr
+ BEGIN
+  DUP H@ 
+ WHILE
+  DUP H@ CALL writecarac 1 DROP
+  # 2 +
+ REPEAT
+ DROP ;
+
+# AAA PRINT DROP
+L" ABC" printustr
+# BBB PRINT DROP
+
+: UNDEFINED
+ PUSH 1
+# BADC0DE PRINT DROP
+# 18 + printustr 
+# 111 PRINT DROP
+  ;
+
+# 222 PRINT DROP
+
+# 333 PRINT DROP
+test
+# 444 PRINT DROP
+
+
+
+

@@ -1,0 +1,15 @@
+: constant CREATE , DOES> @ ;
+# 15 constant c15
+: test15 c15 ;
+test15
+# FFF PRINT
+
+
+
+
+
+
+
+
+
+

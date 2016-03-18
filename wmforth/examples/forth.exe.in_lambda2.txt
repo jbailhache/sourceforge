@@ -1,0 +1,4 @@
+: testlambda  # 3 # 5 LAMBDA + ;LAMBDA CALLADR  PRINT ;
+testlambda
+# FFF PRINT
+

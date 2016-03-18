@@ -1,0 +1,56 @@
+r0=1234
+code r0={r0}
+r1=1234
+code r1={r0}
+rA=1234
+code rA={r0}
+r1=r0
+:labela
+r2=r0
+r0=r2
+r1=r2
+rA=r0
+rB=r0
+rC=r0
+r0=rA
+r0=rB
+r0=rC
+rA=r1
+rC=r1
+rC=rA
+r1=rC
+r0=[rA]
+rA=[rA]
+[rA]=r0
+r0=[rA+12]
+[rA+12]=r0
+r0=[rB++]
+[--rB]=r0
+r1=[rB++]
+[--rB]=r1
+rA=[rB++]
+[rC++]=r0
+r0=r0+r1
+r0=r0-r1
+bp @labela
+bz @labela
+bp rA
+call @labela
+call rA
+beginf
+endf
+ret
+asr r0
+r0=r0&r1
+r0=r0^r1
+code
+r1=r0
+endcode
+getchar
+putchar
+scanhex
+getword
+setbradr
+exit
+
+

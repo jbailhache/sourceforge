@@ -1,0 +1,30 @@
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: printstr
+ BEGIN
+  DUP C@
+ WHILE
+  DUP C@ CALL writecarac 1 DROP
+  # 1 +
+ REPEAT
+ DROP ;
+
+CREATE buf # 100 ALLOT 
+
+: test4
+# 3 DCALL doubleofint 1
+# 4 DCALL doubleofint 1
+DCALL ddiv 4
+# 64 DCALL doubleofint 1
+DCALL dmult 4
+DUP
+CALL intofdouble 2 PRINT 
+" result=%lf***" buf CALL sprintf 4 buf printstr
+;
+
+test4
+
+# FFF PRINT
+

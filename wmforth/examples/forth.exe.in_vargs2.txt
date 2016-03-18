@@ -1,0 +1,9 @@
+
+VARGS x LOCAL a : f
+ x @ # 1 + a !
+ a @ # 2 * ;
+
+: testf # 3 f PRINT ;  
+
+# FFFF PRINT
+

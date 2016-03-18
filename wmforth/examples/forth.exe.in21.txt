@@ -1,0 +1,184 @@
+: Debut # 1234 PRINT ;
+Debut
+
+L" ;;" # 3 MAINLOOP
+
+: test # 5678 PRINT ;
+test
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: printstr
+ BEGIN
+  DUP C@
+ WHILE
+  DUP C@ CALL writecarac 1 DROP
+  # 1 +
+ REPEAT
+ DROP ;
+
+: printeol 
+ # A CALL writecarac 1 DROP ;
+
+: SUC # 1 + ;
+: WC CALL writecarac 1 ;
+
+: FACT 
+ DUP # 2 - IF>=0 
+  DUP # 1 - FACT *
+ ELSE 
+  DROP # 1
+ THEN 
+ ;
+
+SYNONYM REP DUP
+: CELLS # 4 * ;
+
+: test1
+# 3 REP + PRINT # 6 PRINT printeol
+# 4 FACT PRINT # 18 PRINT printeol
+# 3 # 4 * PRINT # C PRINT printeol
+# 5 DUP PRINT PRINT printeol
+# 9 # 3 - PRINT # 6 PRINT printeol
+# 3 # 4 + PRINT  # 7 PRINT printeol
+# 5 # 3 CALL plus 2 PRINT # 8 PRINT printeol
+# 8 SUC PRINT # 9 PRINT printeol
+;
+
+test1
+
+: +I COMPILE + ; IMMEDIATE
+: TEST+I # 4 # 6 +I PRINT ;
+TEST+I  printeol 
+
+: testputcode
+# 8 # 4 PUTCODE E8BB0003 PUTCODE E0800001 PUTCODE E92B0001 PRINT ;
+testputcode printeol
+
+: testif
+ # 0 IF # BAD PRINT ELSE # DAC PRINT THEN
+ # 1 IF # DAC PRINT ELSE # BAD PRINT THEN ;
+testif printeol
+
+: testcall
+# 11 PRINT # A # 7 CALL plus 2 PRINT printeol ;
+testcall
+
+: plus + ;
+: testplus
+# 12 PRINT
+# A # 8 ' plus # 8 + @ CALLADR PRINT
+printeol ;
+testplus 
+
+: initvingt # 14 , ;
+CREATE VINGT initvingt
+: testvingt
+# 14 PRINT
+VINGT @ PRINT 
+printeol ;
+testvingt 
+
+REM ///
+: constant CREATE , DOES> @ ;
+# 15 constant c15
+# 15 PRINT
+c15 PRINT
+printeol
+///
+
+: F # 16 PRINT ;
+: testexe1
+' F EXECUTE  
+# 16 PRINT
+printeol ;
+testexe1 
+
+: plus + ;
+: testexe2
+# 10 # 7 ' plus EXECUTE PRINT 
+# 17 PRINT
+printeol ;
+testexe2 
+
+REM ///
+# 18 PRINT
+# 10 # 8 POPR D 3 EXTVAL plus CALLADR PUSHR D 1 PRINT
+printeol
+///
+
+: testcalladr 
+# 10 # 9 ' plus # 8 + @ CALLADR PRINT
+# 19 PRINT printeol ;
+testcalladr 
+
+: testlambda
+# 10 # A LAMBDA + ;LAMBDA CALLADR PRINT ;
+testlambda
+
+REM ///
+LAMBDA # 1B PRINT ;LAMBDA CALLADR
+# 1B PRINT printeol
+///
+
+: testdec
+#D 194 PRINTDEC
+#D 143 #D 51 + PRINTDEC
+printeol ;
+testdec 
+
+: printustr
+ BEGIN
+   DUP H@ DUP
+ WHILE
+  CALL writecarac 1 DROP
+  # 2 +
+ REPEAT
+;
+: testustr
+L" ABCDEF" printustr
+printeol ;
+testustr 
+
+: COUCOU # 333 PRINT ; IMMEDIATE
+: TEST [COMPILE] COUCOU [ # 111 PRINT ] ;
+: p222 # 222 PRINT ;
+p222 
+TEST
+printeol
+
+
+MACRO: M+ COMPILE + ;
+: +M M+ ;
+: testmacro
+# 10 # 11 +M PRINT 
+# 21 PRINT printeol ;
+testmacro 
+
+: LITERAL
+ # E59F0000 ,
+ # EA000000 , ,
+ # E92B0001 ,
+; IMMEDIATE 
+
+: testlit [ # 1234 ] LITERAL  ;
+
+: testlit2 
+testlit PRINT ;
+testlit2
+
+VARGS n LOCAL f : fact
+ # 1 f !
+ BEGIN
+  n @ # 2 - >=0
+ WHILE
+  n @ f @ * f !
+  n @ # 1 - n !
+ REPEAT
+ POP 1 END PUSH 1 ;
+
+# 4 fact PRINT
+
+# FFFF PRINT

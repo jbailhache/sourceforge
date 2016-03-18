@@ -1,0 +1,77 @@
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: printstr
+ BEGIN
+  DUP C@
+ WHILE
+  DUP C@ CALL writecarac 1 DROP
+  # 1 +
+ REPEAT
+ DROP ;
+
+: printeol 
+  # A CALL writecarac 1 DROP ;
+
+: printeol2
+ " end of
+line" printstr ;
+
+: PH
+ CALL getreadword 0 ;
+
+CREATE bufasm # 40 ALLOT
+
+: dasminstr
+ bufasm CALL printasm 3 DROP ;
+
+: dasm1
+  DUP @ DUP PRINT dasminstr 
+  bufasm printstr  
+  printeol
+ ;
+
+: dasm
+ BEGIN
+  DUP 
+ WHILE
+  SWAP DUP DUP PRINT dasm1
+  # 4 +
+  SWAP
+  # 1 -
+ REPEAT  ;
+
+REM ///
+ PH + # 4 + @ # 40 dasm 
+///
+
+: codeinstr
+# E59F1000 ,
+# EA000000 ,
+,
+# E4801004 ,
+;
+
+: coderet
+# E1A0F00E , ;
+
+CREATE N+
+LASTWORD @ # 8 + @
+LASTWORD @ # 4 + !
+
+# E8BB0003 codeinstr
+# E0800001 codeinstr
+# E92B0001 codeinstr
+coderet
+
+FREESPACE @ PRINT 
+
+PH N+ # 4 + @ # 40 dasm
+
+# BBB PRINT 
+
+# 3 # 4 N+ PRINT
+
+# EEE PRINT
+

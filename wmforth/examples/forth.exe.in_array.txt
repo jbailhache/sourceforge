@@ -1,0 +1,6 @@
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+# 10 array tab
+# 3 tab PRINT
+# FFF PRINT

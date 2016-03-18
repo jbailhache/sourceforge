@@ -1,0 +1,8 @@
+
+# 111 PRINT
+
+: constant CREATE , DOES> @ ; WMODE 2
+# 15 constant c15
+c15 PRINT
+
+# FFF PRINT

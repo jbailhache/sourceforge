@@ -1,0 +1,23 @@
+
+# 111 PRINT
+
+: testasm
+ ASM{
+  POP RB 3
+  R0=R0+R1
+  GOTO SUITE
+  R0=R0+R0
+SUITE: PUSH RB 1
+ }
+;
+
+# 222 PRINT
+
+# 3 # 5 testasm PRINT
+
+# 333 PRINT
+
+: test PRINT ;
+
+# 444 PRINT
+

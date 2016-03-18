@@ -1,0 +1,53 @@
+/pgcc/samp/cvm/target.c: In function `instr* c_getchar(instr*)':
+/pgcc/samp/cvm/target.c:249: `f_getchar' undeclared (first use this function)
+/pgcc/samp/cvm/target.c:249: (Each undeclared identifier is reported only once 
+   for each function it appears in.)
+/pgcc/samp/cvm/target.c: In function `instr* c_putchar(instr*)':
+/pgcc/samp/cvm/target.c:262: `f_putchar' undeclared (first use this function)
+/pgcc/samp/cvm/target.c: In function `instr* c_print(instr*)':
+/pgcc/samp/cvm/target.c:271: `f_print' undeclared (first use this function)
+/pgcc/samp/cvm/target.c: In function `instr* c_getword(instr*)':
+/pgcc/samp/cvm/target.c:285: `getword' undeclared (first use this function)
+/pgcc/samp/cvm/target.c: In function `instr* c_scanhex(instr*)':
+/pgcc/samp/cvm/target.c:301: `f_scanhex' undeclared (first use this function)
+\pgcc\samp\cvm\cvm.o(.text+0x1af8):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_mov_r0_imPiiPc'
+\pgcc\samp\cvm\cvm.o(.text+0x1b38):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_mov_r1_imPiiPc'
+\pgcc\samp\cvm\cvm.o(.text+0x1b80):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_mov_ra_imPiiPc'
+\pgcc\samp\cvm\cvm.o(.text+0x1bf4):/pgcc/samp/cvm/cvm: undefined reference to `Z15c_q_mov_r0_imr0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x1c30):/pgcc/samp/cvm/cvm: undefined reference to `Z15c_q_mov_r1_imr0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x1c6c):/pgcc/samp/cvm/cvm: undefined reference to `Z15c_q_mov_ra_imr0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x1cc0):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_mov_r_rPiii'
+\pgcc\samp\cvm\cvm.o(.text+0x1d14):/pgcc/samp/cvm/cvm: undefined reference to `Z13c_q_mov_r1_r0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x1d78):/pgcc/samp/cvm/cvm: undefined reference to `Z16c_mov_r0_cont_raPi'
+\pgcc\samp\cvm\cvm.o(.text+0x1db4):/pgcc/samp/cvm/cvm: undefined reference to `Z16c_mov_ra_cont_raPi'
+\pgcc\samp\cvm\cvm.o(.text+0x1e18):/pgcc/samp/cvm/cvm: undefined reference to `Z16c_mov_cont_ra_r0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x1e8c):/pgcc/samp/cvm/cvm: undefined reference to `Z24c_mov_r0_cont_ra_plus_imPii'
+\pgcc\samp\cvm\cvm.o(.text+0x1f00):/pgcc/samp/cvm/cvm: undefined reference to `Z24c_mov_cont_ra_plus_im_r0Pii'
+\pgcc\samp\cvm\cvm.o(.text+0x1f64):/pgcc/samp/cvm/cvm: undefined reference to `Z20c_mov_r0_cont_rb_incPi'
+\pgcc\samp\cvm\cvm.o(.text+0x1fa0):/pgcc/samp/cvm/cvm: undefined reference to `Z20c_mov_r1_cont_rb_incPi'
+\pgcc\samp\cvm\cvm.o(.text+0x1fdc):/pgcc/samp/cvm/cvm: undefined reference to `Z20c_mov_ra_cont_rb_incPi'
+\pgcc\samp\cvm\cvm.o(.text+0x2040):/pgcc/samp/cvm/cvm: undefined reference to `Z20c_mov_cont_dec_rb_r0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x207c):/pgcc/samp/cvm/cvm: undefined reference to `Z20c_mov_cont_dec_rb_r1Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x20e0):/pgcc/samp/cvm/cvm: undefined reference to `Z20c_mov_cont_rc_inc_r0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x215c):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_add_r0_r1Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x21d8):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_sub_r0_r1Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x2224):/pgcc/samp/cvm/cvm: undefined reference to `Z8c_asr_r0Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x229c):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_and_r0_r1Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x2318):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_xor_r0_r1Pi'
+\pgcc\samp\cvm\cvm.o(.text+0x2360):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_bp_deplPii'
+\pgcc\samp\cvm\cvm.o(.text+0x23a8):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_bz_deplPii'
+\pgcc\samp\cvm\cvm.o(.text+0x23f4):/pgcc/samp/cvm/cvm: undefined reference to `Z7c_bp_raPi'
+\pgcc\samp\cvm\cvm.o(.text+0x243c):/pgcc/samp/cvm/cvm: undefined reference to `Z11c_call_deplPii'
+\pgcc\samp\cvm\cvm.o(.text+0x2488):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_call_raPi'
+\pgcc\samp\cvm\cvm.o(.text+0x24c4):/pgcc/samp/cvm/cvm: undefined reference to `Z8c_beginfPi'
+\pgcc\samp\cvm\cvm.o(.text+0x24f0):/pgcc/samp/cvm/cvm: undefined reference to `Z6c_endfPi'
+\pgcc\samp\cvm\cvm.o(.text+0x251c):/pgcc/samp/cvm/cvm: undefined reference to `Z5c_retPi'
+\pgcc\samp\cvm\cvm.o(.text+0x2650):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_getcharPi'
+\pgcc\samp\cvm\cvm.o(.text+0x2688):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_putcharPi'
+\pgcc\samp\cvm\cvm.o(.text+0x26b4):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_scanhexPi'
+\pgcc\samp\cvm\cvm.o(.text+0x26e0):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_getwordPi'
+\pgcc\samp\cvm\cvm.o(.text+0x270c):/pgcc/samp/cvm/cvm: undefined reference to `Z6c_codePi'
+\pgcc\samp\cvm\cvm.o(.text+0x2738):/pgcc/samp/cvm/cvm: undefined reference to `Z9c_endcodePi'
+\pgcc\samp\cvm\cvm.o(.text+0x2764):/pgcc/samp/cvm/cvm: undefined reference to `Z10c_setbradrPi'
+\pgcc\samp\cvm\cvm.o(.text+0x2790):/pgcc/samp/cvm/cvm: undefined reference to `Z6c_exitPi'
+\pgcc\samp\cvm\cvm.o(.text+0x33e0):/pgcc/samp/cvm/cvm: undefined reference to `Z9init_codev'

@@ -1,0 +1,8 @@
+(
+
+(DEF MP 
+ (REP NCONSPTHEN I
+  (REP CDR MP ECH CAR MP CONS) ) )
+
+)
+

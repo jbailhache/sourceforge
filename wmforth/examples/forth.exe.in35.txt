@@ -1,0 +1,11 @@
+
+: nop ;
+
+: testif
+ # 111
+ # 1 IF # 222 ELSE nop THEN
+ PRINT ;
+
+testif
+
+

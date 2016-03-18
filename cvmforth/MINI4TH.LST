@@ -1,0 +1,3513 @@
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 1
+mini4th.ASM
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .stack 07000h
+      3				     extrn _scanhex
+      4				     extrn _printhex
+      5				     extrn _sscandec
+      6				     extrn _printdec
+      7				     extrn _getword
+      8				     extrn _f_fopen
+      9				     extrn _f_fclose
+     10				     extrn _f_fgetc
+     11				     extrn _f_fputc
+     12				     extrn _fillmem
+     13				     extrn _dmpcode
+     14				     extrn _initcvm
+     15				     extrn _getsva
+     16	0000			     .code
+     17	0000			     start proc
+     18	0000  8C C8		      mov ax,cs
+     19	0002  8E D8		      mov ds,ax
+     20	0004  8E D0		      mov ss,ax
+     21	0006  8E C0		      mov es,ax
+     22	0008  B8 7000		      mov ax,07000h
+     23	000B  8B E0		      mov sp,ax
+     24	000D  E8 0010		      call main
+     25	0010  B4 00		      mov ah,0
+     26	0012  CD 21		      int 21h
+     27	0014			     start endp
+     28	0014  0000		     sax: dw 0
+     29	0016  0000		     sdx: dw 0
+     30	0018  0000		     scx: dw 0
+     31	001A  0000		     ssi: dw 0
+     32	001C  0000		     sbx: dw 0
+     33	001E  0000		     sdi: dw 0
+     34	0020			     main proc
+     35	0020  B8 4060r		      lea ax,[stk]
+     36	0023  8B D8		      mov bx,ax
+     37	0025  B8 2060r		      lea ax,[cod]
+     38	0028  8B F8		      mov di,ax
+     39	002A  B8 203Cr		      lea ax,[lw]
+     40	002D  A3 0014r		      mov [word	ptr sax],ax
+     41	0030  89 16 0016r	      mov [word	ptr sdx],dx
+     42	0034  89 0E 0018r	      mov [word	ptr scx],cx
+     43	0038  89 36 001Ar	      mov [word	ptr ssi],si
+     44	003C  89 1E 001Cr	      mov [word	ptr sbx],bx
+     45	0040  89 3E 001Er	      mov [word	ptr sdi],di
+     46	0044  BD 0000e		      lea bp,_getsva
+     47	0047  FF D5		      call bp
+     48	0049  8B 16 0016r	      mov dx,[word ptr sdx]
+     49	004D  8B 0E 0018r	      mov cx,[word ptr scx]
+     50	0051  8B 36 001Ar	      mov si,[word ptr ssi]
+     51	0055  8B 1E 001Cr	      mov bx,[word ptr sbx]
+     52	0059  8B 3E 001Er	      mov di,[word ptr sdi]
+     53	005D  8B F0		      mov si,ax
+     54	005F  A1 0014r		      mov ax,[word ptr sax]
+     55	0062  89 44 04		      mov [si+4h],ax
+     56	0065  89 16 0016r	      mov [word	ptr sdx],dx
+     57	0069  89 0E 0018r	      mov [word	ptr scx],cx
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 2
+mini4th.ASM
+
+
+
+     58	006D  89 36 001Ar	      mov [word	ptr ssi],si
+     59	0071  89 1E 001Cr	      mov [word	ptr sbx],bx
+     60	0075  89 3E 001Er	      mov [word	ptr sdi],di
+     61	0079  BD 0000e		      lea bp,_initcvm
+     62	007C  FF D5		      call bp
+     63	007E  8B 16 0016r	      mov dx,[word ptr sdx]
+     64	0082  8B 0E 0018r	      mov cx,[word ptr scx]
+     65	0086  8B 36 001Ar	      mov si,[word ptr ssi]
+     66	008A  8B 1E 001Cr	      mov bx,[word ptr sbx]
+     67	008E  8B 3E 001Er	      mov di,[word ptr sdi]
+     68	0092  BE 0100r		      lea si,[mode]
+     69	0095  B8 0001		      mov ax,01h
+     70	0098  89 04		      mov [si],ax
+     71	009A			     mainloop:
+     72	009A  BE 0100r		      lea si,[mode]
+     73	009D  8B 04		      mov ax,[si]
+     74	009F  3D 0000		      cmp ax,0
+     75	00A2  74 03		      je lmla
+     76	00A4  E8 0879		      call beginim
+     77	00A7			     lmla:
+     78	00A7  89 16 0016r	      mov [word	ptr sdx],dx
+     79	00AB  89 0E 0018r	      mov [word	ptr scx],cx
+     80	00AF  89 36 001Ar	      mov [word	ptr ssi],si
+     81	00B3  89 1E 001Cr	      mov [word	ptr sbx],bx
+     82	00B7  89 3E 001Er	      mov [word	ptr sdi],di
+     83	00BB  BD 0000e		      lea bp,_getword
+     84	00BE  FF D5		      call bp
+     85	00C0  8B 16 0016r	      mov dx,[word ptr sdx]
+     86	00C4  8B 0E 0018r	      mov cx,[word ptr scx]
+     87	00C8  8B 36 001Ar	      mov si,[word ptr ssi]
+     88	00CC  8B 1E 001Cr	      mov bx,[word ptr sbx]
+     89	00D0  8B 3E 001Er	      mov di,[word ptr sdi]
+     90	00D4  8B F0		      mov si,ax
+     91	00D6  E8 0015		      call execword
+     92	00D9  BE 0100r		      lea si,[mode]
+     93	00DC  8B 04		      mov ax,[si]
+     94	00DE  3D 0000		      cmp ax,0
+     95	00E1  74 03		      je lmlb
+     96	00E3  E8 084D		      call endim
+     97	00E6			     lmlb:
+     98	00E6  B8 0000		      mov ax,00h
+     99	00E9  3D 0000		      cmp ax,0
+    100	00EC  74 AC		      je mainloop
+    101	00EE			     execword:
+    102	00EE  8B 44 04		      mov ax,[si+04h]
+    103	00F1  8B C8		      mov cx,ax
+    104	00F3  8B 44 08		      mov ax,[si+08h]
+    105	00F6  8B D6		      mov dx,si
+    106	00F8  8B F1		      mov si,cx
+    107	00FA  FF D6		      call si
+    108	00FC  C3		      ret
+    109	00FD  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(109) Segment alignment not strict	enough
+    110	0100			     mode:
+    111	0100  04*(00)		      db 04h dup (0)
+    112				     align 4
+*Warning* mini4th.ASM(112) Segment alignment not strict	enough
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 3
+mini4th.ASM
+
+
+
+    113	0104  0000		     w1: dw 0
+    114	0106  0000		      dw 0
+    115	0108  011Cr		      dw c1
+    116	010A  0000		      dw 0
+    117	010C  0000		      dw 0
+    118	010E  0000		      dw 0
+    119	0110  0000		      dw 0
+    120	0112  0000		      dw 0
+    121	0114  0118r		      dw n1
+    122	0116  0000		      dw 0
+    123	0118  4E 4F 50		     n1: db 'NOP'
+    124	011B  00		      db 0
+    125				      align 4
+*Warning* mini4th.ASM(125) Segment alignment not strict	enough
+    126	011C			     c1:
+    127	011C  C3		      ret
+    128	011D  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(128) Segment alignment not strict	enough
+    129	0120  0104r		     w2: dw w1
+    130	0122  0000		      dw 0
+    131	0124  0140r		      dw c2
+    132	0126  0000		      dw 0
+    133	0128  0000		      dw 0
+    134	012A  0000		      dw 0
+    135	012C  0000		      dw 0
+    136	012E  0000		      dw 0
+    137	0130  0134r		      dw n2
+    138	0132  0000		      dw 0
+    139	0134  45 58 45 43 43 4F	44+  n2: db 'EXECCODE'
+    140	      45
+    141	013C  00		      db 0
+    142	013D  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(141) Segment alignment not strict	enough
+    143	0140			     c2:
+    144	0140  BE 2060r		      lea si,[cod]
+    145	0143  FF D6		      call si
+    146	0145  C3		      ret
+    147	0146  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(146) Segment alignment not strict	enough
+    148	0148  0120r		     w3: dw w2
+    149	014A  0000		      dw 0
+    150	014C  0168r		      dw c3
+    151	014E  0000		      dw 0
+    152	0150  0000		      dw 0
+    153	0152  0000		      dw 0
+    154	0154  0000		      dw 0
+    155	0156  0000		      dw 0
+    156	0158  015Cr		      dw n3
+    157	015A  0000		      dw 0
+    158	015C  45 58 45 43 57 4F	52+  n3: db 'EXECWORD'
+    159	      44
+    160	0164  00		      db 0
+    161	0165  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(159) Segment alignment not strict	enough
+    162	0168			     c3:
+    163	0168  89 16 0016r	      mov [word	ptr sdx],dx
+    164	016C  89 0E 0018r	      mov [word	ptr scx],cx
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 4
+mini4th.ASM
+
+
+
+    165	0170  89 36 001Ar	      mov [word	ptr ssi],si
+    166	0174  89 1E 001Cr	      mov [word	ptr sbx],bx
+    167	0178  89 3E 001Er	      mov [word	ptr sdi],di
+    168	017C  BD 0000e		      lea bp,_getword
+    169	017F  FF D5		      call bp
+    170	0181  8B 16 0016r	      mov dx,[word ptr sdx]
+    171	0185  8B 0E 0018r	      mov cx,[word ptr scx]
+    172	0189  8B 36 001Ar	      mov si,[word ptr ssi]
+    173	018D  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    174	0191  8B 3E 001Er	      mov di,[word ptr sdi]
+    175	0195  8B F0		      mov si,ax
+    176	0197  8B 44 04		      mov ax,[si+04h]
+    177	019A  8B F0		      mov si,ax
+    178	019C  FF D6		      call si
+    179	019E  C3		      ret
+    180	019F  90		     align 4
+*Warning* mini4th.ASM(178) Segment alignment not strict	enough
+    181	01A0  0148r		     w4: dw w3
+    182	01A2  0000		      dw 0
+    183	01A4  01BCr		      dw c4
+    184	01A6  0000		      dw 0
+    185	01A8  0000		      dw 0
+    186	01AA  0000		      dw 0
+    187	01AC  0000		      dw 0
+    188	01AE  0000		      dw 0
+    189	01B0  01B4r		      dw n4
+    190	01B2  0000		      dw 0
+    191	01B4  50 55 54 43 4F 44	45   n4: db 'PUTCODE'
+    192	01BB  00		      db 0
+    193				      align 4
+*Warning* mini4th.ASM(191) Segment alignment not strict	enough
+    194	01BC			     c4:
+    195	01BC  89 16 0016r	      mov [word	ptr sdx],dx
+    196	01C0  89 0E 0018r	      mov [word	ptr scx],cx
+    197	01C4  89 36 001Ar	      mov [word	ptr ssi],si
+    198	01C8  89 1E 001Cr	      mov [word	ptr sbx],bx
+    199	01CC  89 3E 001Er	      mov [word	ptr sdi],di
+    200	01D0  BD 0000e		      lea bp,_getword
+    201	01D3  FF D5		      call bp
+    202	01D5  8B 16 0016r	      mov dx,[word ptr sdx]
+    203	01D9  8B 0E 0018r	      mov cx,[word ptr scx]
+    204	01DD  8B 36 001Ar	      mov si,[word ptr ssi]
+    205	01E1  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    206	01E5  8B 3E 001Er	      mov di,[word ptr sdi]
+    207	01E9  8B F0		      mov si,ax
+    208	01EB  89 16 0016r	      mov [word	ptr sdx],dx
+    209	01EF  89 0E 0018r	      mov [word	ptr scx],cx
+    210	01F3  89 36 001Ar	      mov [word	ptr ssi],si
+    211	01F7  89 1E 001Cr	      mov [word	ptr sbx],bx
+    212	01FB  89 3E 001Er	      mov [word	ptr sdi],di
+    213	01FF  BD 0000e		      lea bp,_scanhex
+    214	0202  FF D5		      call bp
+    215	0204  8B 16 0016r	      mov dx,[word ptr sdx]
+    216	0208  8B 0E 0018r	      mov cx,[word ptr scx]
+    217	020C  8B 36 001Ar	      mov si,[word ptr ssi]
+    218	0210  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    219	0214  8B 3E 001Er	      mov di,[word ptr sdi]
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 5
+mini4th.ASM
+
+
+
+    220	0218  89 05		      mov [di],ax
+    221	021A  47		      inc di
+    222	021B  C3		      ret
+    223				     align 4
+*Warning* mini4th.ASM(221) Segment alignment not strict	enough
+    224	021C  01A0r		     w5: dw w4
+    225	021E  0000		      dw 0
+    226	0220  0238r		      dw c5
+    227	0222  0000		      dw 0
+    228	0224  0000		      dw 0
+    229	0226  0000		      dw 0
+    230	0228  0000		      dw 0
+    231	022A  0000		      dw 0
+    232	022C  0230r		      dw n5
+    233	022E  0000		      dw 0
+    234	0230  48 45 52 45	     n5: db 'HERE'
+    235	0234  00		      db 0
+    236	0235  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(234) Segment alignment not strict	enough
+    237	0238			     c5:
+    238	0238  8B C7		      mov ax,di
+    239	023A  51		      push cx
+    240	023B  B1 B8		      mov cl,0B8h
+    241	023D  88 0D		      mov [di],cl
+    242	023F  47		      inc di
+    243	0240  88 05		      mov [di],al
+    244	0242  47		      inc di
+    245	0243  88 25		      mov[di],ah
+    246	0245  47		      inc di
+    247	0246  59		      pop cx
+    248	0247  BD 0000e		      lea bp,_fillmem
+    249	024A  FF D5		      call bp
+    250	024C  05		      db b70-a70
+    251	024D			     a70:
+    252	024D  83 EB 02		      sub bx,2
+    253	0250  89 07		      mov [bx],ax
+    254	0252			     b70:
+    255	0252  C3		      ret
+    256	0253  90		     align 4
+*Warning* mini4th.ASM(254) Segment alignment not strict	enough
+    257	0254  021Cr		     w6: dw w5
+    258	0256  0000		      dw 0
+    259	0258  026Cr		      dw c6
+    260	025A  0000		      dw 0
+    261	025C  0000		      dw 0
+    262	025E  0000		      dw 0
+    263	0260  0000		      dw 0
+    264	0262  0000		      dw 0
+    265	0264  0268r		      dw n6
+    266	0266  0000		      dw 0
+    267	0268  53 50 40		     n6: db 'SP@'
+    268	026B  00		      db 0
+    269				      align 4
+*Warning* mini4th.ASM(267) Segment alignment not strict	enough
+    270	026C			     c6:
+    271	026C  BD 0000e		      lea bp,_fillmem
+    272	026F  FF D5		      call bp
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 6
+mini4th.ASM
+
+
+
+    273	0271  07		      db b71-a71
+    274	0272			     a71:
+    275	0272  8B C3		      mov ax,bx
+    276	0274  83 EB 02		      sub bx,2
+    277	0277  89 07		      mov [bx],ax
+    278	0279			     b71:
+    279	0279  C3		      ret
+    280	027A  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(278) Segment alignment not strict	enough
+    281	027C  0254r		     w7: dw w6
+    282	027E  0000		      dw 0
+    283	0280  0294r		      dw c7
+    284	0282  0000		      dw 0
+    285	0284  0000		      dw 0
+    286	0286  0000		      dw 0
+    287	0288  0000		      dw 0
+    288	028A  0000		      dw 0
+    289	028C  0290r		      dw n7
+    290	028E  0000		      dw 0
+    291	0290  53 50 21		     n7: db 'SP!'
+    292	0293  00		      db 0
+    293				      align 4
+*Warning* mini4th.ASM(291) Segment alignment not strict	enough
+    294	0294			     c7:
+    295	0294  BD 0000e		      lea bp,_fillmem
+    296	0297  FF D5		      call bp
+    297	0299  07		      db b72-a72
+    298	029A			     a72:
+    299	029A  8B 07		      mov ax,[bx]
+    300	029C  83 C3 02		      add bx,2
+    301	029F  8B D8		      mov bx,ax
+    302	02A1			     b72:
+    303	02A1  C3		      ret
+    304	02A2  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(302) Segment alignment not strict	enough
+    305	02A4  027Cr		     w8: dw w7
+    306	02A6  0000		      dw 0
+    307	02A8  02BCr		      dw c8
+    308	02AA  0000		      dw 0
+    309	02AC  0000		      dw 0
+    310	02AE  0000		      dw 0
+    311	02B0  0000		      dw 0
+    312	02B2  0000		      dw 0
+    313	02B4  02B8r		      dw n8
+    314	02B6  0000		      dw 0
+    315	02B8  40		     n8: db '@'
+    316	02B9  00		      db 0
+    317	02BA  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(315) Segment alignment not strict	enough
+    318	02BC			     c8:
+    319	02BC  BD 0000e		      lea bp,_fillmem
+    320	02BF  FF D5		      call bp
+    321	02C1  0C		      db b73-a73
+    322	02C2			     a73:
+    323	02C2  8B 37		      mov si,[bx]
+    324	02C4  83 C3 02		      add bx,2
+    325	02C7  8B 04		      mov ax,[si]
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 7
+mini4th.ASM
+
+
+
+    326	02C9  83 EB 02		      sub bx,2
+    327	02CC  89 07		      mov [bx],ax
+    328	02CE			     b73:
+    329	02CE  C3		      ret
+    330	02CF  90		     align 4
+*Warning* mini4th.ASM(328) Segment alignment not strict	enough
+    331	02D0  02A4r		     w9: dw w8
+    332	02D2  0000		      dw 0
+    333	02D4  02E8r		      dw c9
+    334	02D6  0000		      dw 0
+    335	02D8  0000		      dw 0
+    336	02DA  0000		      dw 0
+    337	02DC  0000		      dw 0
+    338	02DE  0000		      dw 0
+    339	02E0  02E4r		      dw n9
+    340	02E2  0000		      dw 0
+    341	02E4  43 40		     n9: db 'C@'
+    342	02E6  00		      db 0
+    343	02E7  90		      align 4
+*Warning* mini4th.ASM(341) Segment alignment not strict	enough
+    344	02E8			     c9:
+    345	02E8  BD 0000e		      lea bp,_fillmem
+    346	02EB  FF D5		      call bp
+    347	02ED  0E		      db b74-a74
+    348	02EE			     a74:
+    349	02EE  8B 37		      mov si,[bx]
+    350	02F0  83 C3 02		      add bx,2
+    351	02F3  8A 04		      mov al,[byte ptr si]
+    352	02F5  B4 00		     mov ah,0
+    353	02F7  83 EB 02		      sub bx,2
+    354	02FA  89 07		      mov [bx],ax
+    355	02FC			     b74:
+    356	02FC  C3		      ret
+    357	02FD  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(355) Segment alignment not strict	enough
+    358	0300  02D0r		     w10: dw w9
+    359	0302  0000		      dw 0
+    360	0304  0318r		      dw c10
+    361	0306  0000		      dw 0
+    362	0308  0000		      dw 0
+    363	030A  0000		      dw 0
+    364	030C  0000		      dw 0
+    365	030E  0000		      dw 0
+    366	0310  0314r		      dw n10
+    367	0312  0000		      dw 0
+    368	0314  21		     n10: db '!'
+    369	0315  00		      db 0
+    370	0316  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(368) Segment alignment not strict	enough
+    371	0318			     c10:
+    372	0318  BD 0000e		      lea bp,_fillmem
+    373	031B  FF D5		      call bp
+    374	031D  0C		      db b75-a75
+    375	031E			     a75:
+    376	031E  8B 37		      mov si,[bx]
+    377	0320  83 C3 02		      add bx,2
+    378	0323  8B 07		      mov ax,[bx]
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 8
+mini4th.ASM
+
+
+
+    379	0325  83 C3 02		      add bx,2
+    380	0328  89 04		      mov [si],ax
+    381	032A			     b75:
+    382	032A  C3		      ret
+    383	032B  90		     align 4
+*Warning* mini4th.ASM(381) Segment alignment not strict	enough
+    384	032C  0300r		     w11: dw w10
+    385	032E  0000		      dw 0
+    386	0330  0344r		      dw c11
+    387	0332  0000		      dw 0
+    388	0334  0000		      dw 0
+    389	0336  0000		      dw 0
+    390	0338  0000		      dw 0
+    391	033A  0000		      dw 0
+    392	033C  0340r		      dw n11
+    393	033E  0000		      dw 0
+    394	0340  43 21		     n11: db 'C!'
+    395	0342  00		      db 0
+    396	0343  90		      align 4
+*Warning* mini4th.ASM(394) Segment alignment not strict	enough
+    397	0344			     c11:
+    398	0344  BD 0000e		      lea bp,_fillmem
+    399	0347  FF D5		      call bp
+    400	0349  0C		      db b76-a76
+    401	034A			     a76:
+    402	034A  8B 37		      mov si,[bx]
+    403	034C  83 C3 02		      add bx,2
+    404	034F  8B 07		      mov ax,[bx]
+    405	0351  83 C3 02		      add bx,2
+    406	0354  88 04		      mov [byte	ptr si],al
+    407	0356			     b76:
+    408	0356  C3		      ret
+    409	0357  90		     align 4
+*Warning* mini4th.ASM(407) Segment alignment not strict	enough
+    410	0358  032Cr		     w12: dw w11
+    411	035A  0000		      dw 0
+    412	035C  0370r		      dw c12
+    413	035E  0000		      dw 0
+    414	0360  0000		      dw 0
+    415	0362  0000		      dw 0
+    416	0364  0000		      dw 0
+    417	0366  0000		      dw 0
+    418	0368  036Cr		      dw n12
+    419	036A  0000		      dw 0
+    420	036C  4B 45 59		     n12: db 'KEY'
+    421	036F  00		      db 0
+    422				      align 4
+*Warning* mini4th.ASM(420) Segment alignment not strict	enough
+    423	0370			     c12:
+    424	0370  BD 0000e		      lea bp,_fillmem
+    425	0373  FF D5		      call bp
+    426	0375  0B		      db b77-a77
+    427	0376			     a77:
+    428	0376  B4 01		      mov ah,1
+    429	0378  CD 21		      int 21h
+    430	037A  B4 00		      mov ah,0
+    431	037C  83 EB 02		      sub bx,2
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 9
+mini4th.ASM
+
+
+
+    432	037F  89 07		      mov [bx],ax
+    433	0381			     b77:
+    434	0381  C3		      ret
+    435	0382  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(433) Segment alignment not strict	enough
+    436	0384  0358r		     w13: dw w12
+    437	0386  0000		      dw 0
+    438	0388  03A0r		      dw c13
+    439	038A  0000		      dw 0
+    440	038C  0000		      dw 0
+    441	038E  0000		      dw 0
+    442	0390  0000		      dw 0
+    443	0392  0000		      dw 0
+    444	0394  0398r		      dw n13
+    445	0396  0000		      dw 0
+    446	0398  45 4D 49 54	     n13: db 'EMIT'
+    447	039C  00		      db 0
+    448	039D  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(446) Segment alignment not strict	enough
+    449	03A0			     c13:
+    450	03A0  BD 0000e		      lea bp,_fillmem
+    451	03A3  FF D5		      call bp
+    452	03A5  0B		      db b78-a78
+    453	03A6			     a78:
+    454	03A6  8B 07		      mov ax,[bx]
+    455	03A8  83 C3 02		      add bx,2
+    456	03AB  8B D0		      mov dx,ax
+    457	03AD  B4 02		      mov ah,2
+    458	03AF  CD 21		      int 21h
+    459	03B1			     b78:
+    460	03B1  C3		      ret
+    461	03B2  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(459) Segment alignment not strict	enough
+    462	03B4  0384r		     w14: dw w13
+    463	03B6  0000		      dw 0
+    464	03B8  03D0r		      dw c14
+    465	03BA  0000		      dw 0
+    466	03BC  0000		      dw 0
+    467	03BE  0000		      dw 0
+    468	03C0  0000		      dw 0
+    469	03C2  0000		      dw 0
+    470	03C4  03C8r		      dw n14
+    471	03C6  0000		      dw 0
+    472	03C8  48 45 58 2E	     n14: db 'HEX.'
+    473	03CC  00		      db 0
+    474	03CD  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(472) Segment alignment not strict	enough
+    475	03D0			     c14:
+    476	03D0  BD 0000e		      lea bp,_fillmem
+    477	03D3  FF D5		      call bp
+    478	03D5  35		      db b79-a79
+    479	03D6			     a79:
+    480	03D6  8B 07		      mov ax,[bx]
+    481	03D8  83 C3 02		      add bx,2
+    482	03DB  50		      push ax
+    483	03DC  89 16 0016r	      mov [word	ptr sdx],dx
+    484	03E0  89 0E 0018r	      mov [word	ptr scx],cx
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 10
+mini4th.ASM
+
+
+
+    485	03E4  89 36 001Ar	      mov [word	ptr ssi],si
+    486	03E8  89 1E 001Cr	      mov [word	ptr sbx],bx
+    487	03EC  89 3E 001Er	      mov [word	ptr sdi],di
+    488	03F0  BD 0000e		      lea bp,_printhex
+    489	03F3  FF D5		      call bp
+    490	03F5  8B 16 0016r	      mov dx,[word ptr sdx]
+    491	03F9  8B 0E 0018r	      mov cx,[word ptr scx]
+    492	03FD  8B 36 001Ar	      mov si,[word ptr ssi]
+    493	0401  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    494	0405  8B 3E 001Er	      mov di,[word ptr sdi]
+    495	0409  44		      inc sp
+    496	040A  44		      inc sp
+    497	040B			     b79:
+    498	040B  C3		      ret
+    499				     align 4
+*Warning* mini4th.ASM(497) Segment alignment not strict	enough
+    500	040C  03B4r		     w15: dw w14
+    501	040E  0000		      dw 0
+    502	0410  0424r		      dw c15
+    503	0412  0000		      dw 0
+    504	0414  0000		      dw 0
+    505	0416  0000		      dw 0
+    506	0418  0000		      dw 0
+    507	041A  0000		      dw 0
+    508	041C  0420r		      dw n15
+    509	041E  0000		      dw 0
+    510	0420  2E		     n15: db '.'
+    511	0421  00		      db 0
+    512	0422  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(510) Segment alignment not strict	enough
+    513	0424			     c15:
+    514	0424  BD 0000e		      lea bp,_fillmem
+    515	0427  FF D5		      call bp
+    516	0429  35		      db b80-a80
+    517	042A			     a80:
+    518	042A  8B 07		      mov ax,[bx]
+    519	042C  83 C3 02		      add bx,2
+    520	042F  50		      push ax
+    521	0430  89 16 0016r	      mov [word	ptr sdx],dx
+    522	0434  89 0E 0018r	      mov [word	ptr scx],cx
+    523	0438  89 36 001Ar	      mov [word	ptr ssi],si
+    524	043C  89 1E 001Cr	      mov [word	ptr sbx],bx
+    525	0440  89 3E 001Er	      mov [word	ptr sdi],di
+    526	0444  BD 0000e		      lea bp,_printdec
+    527	0447  FF D5		      call bp
+    528	0449  8B 16 0016r	      mov dx,[word ptr sdx]
+    529	044D  8B 0E 0018r	      mov cx,[word ptr scx]
+    530	0451  8B 36 001Ar	      mov si,[word ptr ssi]
+    531	0455  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    532	0459  8B 3E 001Er	      mov di,[word ptr sdi]
+    533	045D  44		      inc sp
+    534	045E  44		      inc sp
+    535	045F			     b80:
+    536	045F  C3		      ret
+    537				     align 4
+*Warning* mini4th.ASM(535) Segment alignment not strict	enough
+    538	0460  040Cr		     w16: dw w15
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 11
+mini4th.ASM
+
+
+
+    539	0462  0000		      dw 0
+    540	0464  047Cr		      dw c16
+    541	0466  0000		      dw 0
+    542	0468  0000		      dw 0
+    543	046A  0000		      dw 0
+    544	046C  0000		      dw 0
+    545	046E  0000		      dw 0
+    546	0470  0474r		      dw n16
+    547	0472  0000		      dw 0
+    548	0474  48 45 58 4C 49 54	     n16: db 'HEXLIT'
+    549	047A  00		      db 0
+    550	047B  90		      align 4
+*Warning* mini4th.ASM(548) Segment alignment not strict	enough
+    551	047C			     c16:
+    552	047C  89 16 0016r	      mov [word	ptr sdx],dx
+    553	0480  89 0E 0018r	      mov [word	ptr scx],cx
+    554	0484  89 36 001Ar	      mov [word	ptr ssi],si
+    555	0488  89 1E 001Cr	      mov [word	ptr sbx],bx
+    556	048C  89 3E 001Er	      mov [word	ptr sdi],di
+    557	0490  BD 0000e		      lea bp,_scanhex
+    558	0493  FF D5		      call bp
+    559	0495  8B 16 0016r	      mov dx,[word ptr sdx]
+    560	0499  8B 0E 0018r	      mov cx,[word ptr scx]
+    561	049D  8B 36 001Ar	      mov si,[word ptr ssi]
+    562	04A1  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    563	04A5  8B 3E 001Er	      mov di,[word ptr sdi]
+    564	04A9  51		      push cx
+    565	04AA  B1 B8		      mov cl,0B8h
+    566	04AC  88 0D		      mov [di],cl
+    567	04AE  47		      inc di
+    568	04AF  88 05		      mov [di],al
+    569	04B1  47		      inc di
+    570	04B2  88 25		      mov[di],ah
+    571	04B4  47		      inc di
+    572	04B5  59		      pop cx
+    573	04B6  BD 0000e		      lea bp,_fillmem
+    574	04B9  FF D5		      call bp
+    575	04BB  05		      db b81-a81
+    576	04BC			     a81:
+    577	04BC  83 EB 02		      sub bx,2
+    578	04BF  89 07		      mov [bx],ax
+    579	04C1			     b81:
+    580	04C1  C3		      ret
+    581	04C2  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(579) Segment alignment not strict	enough
+    582	04C4  0460r		     w17: dw w16
+    583	04C6  0000		      dw 0
+    584	04C8  04E0r		      dw c17
+    585	04CA  0000		      dw 0
+    586	04CC  0000		      dw 0
+    587	04CE  0000		      dw 0
+    588	04D0  0000		      dw 0
+    589	04D2  0000		      dw 0
+    590	04D4  04D8r		      dw n17
+    591	04D6  0000		      dw 0
+    592	04D8  44 52 4F 50	     n17: db 'DROP'
+    593	04DC  00		      db 0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 12
+mini4th.ASM
+
+
+
+    594	04DD  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(592) Segment alignment not strict	enough
+    595	04E0			     c17:
+    596	04E0  BD 0000e		      lea bp,_fillmem
+    597	04E3  FF D5		      call bp
+    598	04E5  05		      db b82-a82
+    599	04E6			     a82:
+    600	04E6  8B 07		      mov ax,[bx]
+    601	04E8  83 C3 02		      add bx,2
+    602	04EB			     b82:
+    603	04EB  C3		      ret
+    604				     align 4
+*Warning* mini4th.ASM(602) Segment alignment not strict	enough
+    605	04EC  04C4r		     w18: dw w17
+    606	04EE  0000		      dw 0
+    607	04F0  0504r		      dw c18
+    608	04F2  0000		      dw 0
+    609	04F4  0000		      dw 0
+    610	04F6  0000		      dw 0
+    611	04F8  0000		      dw 0
+    612	04FA  0000		      dw 0
+    613	04FC  0500r		      dw n18
+    614	04FE  0000		      dw 0
+    615	0500  44 55 50		     n18: db 'DUP'
+    616	0503  00		      db 0
+    617				      align 4
+*Warning* mini4th.ASM(615) Segment alignment not strict	enough
+    618	0504			     c18:
+    619	0504  BD 0000e		      lea bp,_fillmem
+    620	0507  FF D5		      call bp
+    621	0509  0F		      db b83-a83
+    622	050A			     a83:
+    623	050A  8B 07		      mov ax,[bx]
+    624	050C  83 C3 02		      add bx,2
+    625	050F  83 EB 02		      sub bx,2
+    626	0512  89 07		      mov [bx],ax
+    627	0514  83 EB 02		      sub bx,2
+    628	0517  89 07		      mov [bx],ax
+    629	0519			     b83:
+    630	0519  C3		      ret
+    631	051A  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(629) Segment alignment not strict	enough
+    632	051C  04ECr		     w19: dw w18
+    633	051E  0000		      dw 0
+    634	0520  0538r		      dw c19
+    635	0522  0000		      dw 0
+    636	0524  0000		      dw 0
+    637	0526  0000		      dw 0
+    638	0528  0000		      dw 0
+    639	052A  0000		      dw 0
+    640	052C  0530r		      dw n19
+    641	052E  0000		      dw 0
+    642	0530  53 57 41 50	     n19: db 'SWAP'
+    643	0534  00		      db 0
+    644	0535  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(642) Segment alignment not strict	enough
+    645	0538			     c19:
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 13
+mini4th.ASM
+
+
+
+    646	0538  BD 0000e		      lea bp,_fillmem
+    647	053B  FF D5		      call bp
+    648	053D  14		      db b84-a84
+    649	053E			     a84:
+    650	053E  8B 07		      mov ax,[bx]
+    651	0540  83 C3 02		      add bx,2
+    652	0543  8B 17		      mov dx,[bx]
+    653	0545  83 C3 02		      add bx,2
+    654	0548  83 EB 02		      sub bx,2
+    655	054B  89 07		      mov [bx],ax
+    656	054D  83 EB 02		      sub bx,2
+    657	0550  89 17		      mov [bx],dx
+    658	0552			     b84:
+    659	0552  C3		      ret
+    660	0553  90		     align 4
+*Warning* mini4th.ASM(658) Segment alignment not strict	enough
+    661	0554  051Cr		     w20: dw w19
+    662	0556  0000		      dw 0
+    663	0558  056Cr		      dw c20
+    664	055A  0000		      dw 0
+    665	055C  0000		      dw 0
+    666	055E  0000		      dw 0
+    667	0560  0000		      dw 0
+    668	0562  0000		      dw 0
+    669	0564  0568r		      dw n20
+    670	0566  0000		      dw 0
+    671	0568  52 4F 54		     n20: db 'ROT'
+    672	056B  00		      db 0
+    673				      align 4
+*Warning* mini4th.ASM(671) Segment alignment not strict	enough
+    674	056C			     c20:
+    675	056C  BD 0000e		      lea bp,_fillmem
+    676	056F  FF D5		      call bp
+    677	0571  22		      db b85-a85
+    678	0572			     a85:
+    679	0572  8B 07		      mov ax,[bx]
+    680	0574  83 C3 02		      add bx,2
+    681	0577  8B C8		      mov cx,ax
+    682	0579  8B 17		      mov dx,[bx]
+    683	057B  83 C3 02		      add bx,2
+    684	057E  8B 07		      mov ax,[bx]
+    685	0580  83 C3 02		      add bx,2
+    686	0583  83 EB 02		      sub bx,2
+    687	0586  89 17		      mov [bx],dx
+    688	0588  8B D1		      mov dx,cx
+    689	058A  83 EB 02		      sub bx,2
+    690	058D  89 17		      mov [bx],dx
+    691	058F  83 EB 02		      sub bx,2
+    692	0592  89 07		      mov [bx],ax
+    693	0594			     b85:
+    694	0594  C3		      ret
+    695	0595  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(693) Segment alignment not strict	enough
+    696	0598  0554r		     w21: dw w20
+    697	059A  0000		      dw 0
+    698	059C  05B4r		      dw c21
+    699	059E  0000		      dw 0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 14
+mini4th.ASM
+
+
+
+    700	05A0  0000		      dw 0
+    701	05A2  0000		      dw 0
+    702	05A4  0000		      dw 0
+    703	05A6  0000		      dw 0
+    704	05A8  05ACr		      dw n21
+    705	05AA  0000		      dw 0
+    706	05AC  4F 56 45 52	     n21: db 'OVER'
+    707	05B0  00		      db 0
+    708	05B1  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(706) Segment alignment not strict	enough
+    709	05B4			     c21:
+    710	05B4  BD 0000e		      lea bp,_fillmem
+    711	05B7  FF D5		      call bp
+    712	05B9  19		      db b86-a86
+    713	05BA			     a86:
+    714	05BA  8B 07		      mov ax,[bx]
+    715	05BC  83 C3 02		      add bx,2
+    716	05BF  8B 17		      mov dx,[bx]
+    717	05C1  83 C3 02		      add bx,2
+    718	05C4  83 EB 02		      sub bx,2
+    719	05C7  89 17		      mov [bx],dx
+    720	05C9  83 EB 02		      sub bx,2
+    721	05CC  89 07		      mov [bx],ax
+    722	05CE  83 EB 02		      sub bx,2
+    723	05D1  89 17		      mov [bx],dx
+    724	05D3			     b86:
+    725	05D3  C3		      ret
+    726				     align 4
+*Warning* mini4th.ASM(724) Segment alignment not strict	enough
+    727	05D4  0598r		     w22: dw w21
+    728	05D6  0000		      dw 0
+    729	05D8  05F0r		      dw c22
+    730	05DA  0000		      dw 0
+    731	05DC  0000		      dw 0
+    732	05DE  0000		      dw 0
+    733	05E0  0000		      dw 0
+    734	05E2  0000		      dw 0
+    735	05E4  05E8r		      dw n22
+    736	05E6  0000		      dw 0
+    737	05E8  54 55 43 4B	     n22: db 'TUCK'
+    738	05EC  00		      db 0
+    739	05ED  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(737) Segment alignment not strict	enough
+    740	05F0			     c22:
+    741	05F0  BD 0000e		      lea bp,_fillmem
+    742	05F3  FF D5		      call bp
+    743	05F5  19		      db b87-a87
+    744	05F6			     a87:
+    745	05F6  8B 07		      mov ax,[bx]
+    746	05F8  83 C3 02		      add bx,2
+    747	05FB  8B 17		      mov dx,[bx]
+    748	05FD  83 C3 02		      add bx,2
+    749	0600  83 EB 02		      sub bx,2
+    750	0603  89 07		      mov [bx],ax
+    751	0605  83 EB 02		      sub bx,2
+    752	0608  89 17		      mov [bx],dx
+    753	060A  83 EB 02		      sub bx,2
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 15
+mini4th.ASM
+
+
+
+    754	060D  89 07		      mov [bx],ax
+    755	060F			     b87:
+    756	060F  C3		      ret
+    757				     align 4
+*Warning* mini4th.ASM(755) Segment alignment not strict	enough
+    758	0610  05D4r		     w23: dw w22
+    759	0612  0000		      dw 0
+    760	0614  0628r		      dw c23
+    761	0616  0000		      dw 0
+    762	0618  0000		      dw 0
+    763	061A  0000		      dw 0
+    764	061C  0000		      dw 0
+    765	061E  0000		      dw 0
+    766	0620  0624r		      dw n23
+    767	0622  0000		      dw 0
+    768	0624  2B		     n23: db '+'
+    769	0625  00		      db 0
+    770	0626  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(768) Segment alignment not strict	enough
+    771	0628			     c23:
+    772	0628  BD 0000e		      lea bp,_fillmem
+    773	062B  FF D5		      call bp
+    774	062D  11		      db b88-a88
+    775	062E			     a88:
+    776	062E  8B 07		      mov ax,[bx]
+    777	0630  83 C3 02		      add bx,2
+    778	0633  8B 17		      mov dx,[bx]
+    779	0635  83 C3 02		      add bx,2
+    780	0638  03 C2		      add ax,dx
+    781	063A  83 EB 02		      sub bx,2
+    782	063D  89 07		      mov [bx],ax
+    783	063F			     b88:
+    784	063F  C3		      ret
+    785				     align 4
+*Warning* mini4th.ASM(783) Segment alignment not strict	enough
+    786	0640  0610r		     w24: dw w23
+    787	0642  0000		      dw 0
+    788	0644  0658r		      dw c24
+    789	0646  0000		      dw 0
+    790	0648  0000		      dw 0
+    791	064A  0000		      dw 0
+    792	064C  0000		      dw 0
+    793	064E  0000		      dw 0
+    794	0650  0654r		      dw n24
+    795	0652  0000		      dw 0
+    796	0654  2D		     n24: db '-'
+    797	0655  00		      db 0
+    798	0656  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(796) Segment alignment not strict	enough
+    799	0658			     c24:
+    800	0658  BD 0000e		      lea bp,_fillmem
+    801	065B  FF D5		      call bp
+    802	065D  11		      db b89-a89
+    803	065E			     a89:
+    804	065E  8B 17		      mov dx,[bx]
+    805	0660  83 C3 02		      add bx,2
+    806	0663  8B 07		      mov ax,[bx]
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 16
+mini4th.ASM
+
+
+
+    807	0665  83 C3 02		      add bx,2
+    808	0668  2B C2		      sub ax,dx
+    809	066A  83 EB 02		      sub bx,2
+    810	066D  89 07		      mov [bx],ax
+    811	066F			     b89:
+    812	066F  C3		      ret
+    813				     align 4
+*Warning* mini4th.ASM(811) Segment alignment not strict	enough
+    814	0670  0640r		     w25: dw w24
+    815	0672  0000		      dw 0
+    816	0674  0688r		      dw c25
+    817	0676  0000		      dw 0
+    818	0678  0000		      dw 0
+    819	067A  0000		      dw 0
+    820	067C  0000		      dw 0
+    821	067E  0000		      dw 0
+    822	0680  0684r		      dw n25
+    823	0682  0000		      dw 0
+    824	0684  41 4E 44		     n25: db 'AND'
+    825	0687  00		      db 0
+    826				      align 4
+*Warning* mini4th.ASM(824) Segment alignment not strict	enough
+    827	0688			     c25:
+    828	0688  BD 0000e		      lea bp,_fillmem
+    829	068B  FF D5		      call bp
+    830	068D  11		      db b90-a90
+    831	068E			     a90:
+    832	068E  8B 17		      mov dx,[bx]
+    833	0690  83 C3 02		      add bx,2
+    834	0693  8B 07		      mov ax,[bx]
+    835	0695  83 C3 02		      add bx,2
+    836	0698  23 C2		      and ax,dx
+    837	069A  83 EB 02		      sub bx,2
+    838	069D  89 07		      mov [bx],ax
+    839	069F			     b90:
+    840	069F  C3		      ret
+    841				     align 4
+*Warning* mini4th.ASM(839) Segment alignment not strict	enough
+    842	06A0  0670r		     w26: dw w25
+    843	06A2  0000		      dw 0
+    844	06A4  06B8r		      dw c26
+    845	06A6  0000		      dw 0
+    846	06A8  0000		      dw 0
+    847	06AA  0000		      dw 0
+    848	06AC  0000		      dw 0
+    849	06AE  0000		      dw 0
+    850	06B0  06B4r		      dw n26
+    851	06B2  0000		      dw 0
+    852	06B4  58 4F 52		     n26: db 'XOR'
+    853	06B7  00		      db 0
+    854				      align 4
+*Warning* mini4th.ASM(852) Segment alignment not strict	enough
+    855	06B8			     c26:
+    856	06B8  BD 0000e		      lea bp,_fillmem
+    857	06BB  FF D5		      call bp
+    858	06BD  11		      db b91-a91
+    859	06BE			     a91:
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 17
+mini4th.ASM
+
+
+
+    860	06BE  8B 17		      mov dx,[bx]
+    861	06C0  83 C3 02		      add bx,2
+    862	06C3  8B 07		      mov ax,[bx]
+    863	06C5  83 C3 02		      add bx,2
+    864	06C8  33 C2		      xor ax,dx
+    865	06CA  83 EB 02		      sub bx,2
+    866	06CD  89 07		      mov [bx],ax
+    867	06CF			     b91:
+    868	06CF  C3		      ret
+    869				     align 4
+*Warning* mini4th.ASM(867) Segment alignment not strict	enough
+    870	06D0  06A0r		     w27: dw w26
+    871	06D2  0000		      dw 0
+    872	06D4  06E8r		      dw c27
+    873	06D6  0000		      dw 0
+    874	06D8  0000		      dw 0
+    875	06DA  0000		      dw 0
+    876	06DC  0000		      dw 0
+    877	06DE  0000		      dw 0
+    878	06E0  06E4r		      dw n27
+    879	06E2  0000		      dw 0
+    880	06E4  41 53 52		     n27: db 'ASR'
+    881	06E7  00		      db 0
+    882				      align 4
+*Warning* mini4th.ASM(880) Segment alignment not strict	enough
+    883	06E8			     c27:
+    884	06E8  BD 0000e		      lea bp,_fillmem
+    885	06EB  FF D5		      call bp
+    886	06ED  0C		      db b92-a92
+    887	06EE			     a92:
+    888	06EE  8B 07		      mov ax,[bx]
+    889	06F0  83 C3 02		      add bx,2
+    890	06F3  D1 F8		      sar ax,1
+    891	06F5  83 EB 02		      sub bx,2
+    892	06F8  89 07		      mov [bx],ax
+    893	06FA			     b92:
+    894	06FA  C3		      ret
+    895	06FB  90		     align 4
+*Warning* mini4th.ASM(893) Segment alignment not strict	enough
+    896	06FC  06D0r		     w28: dw w27
+    897	06FE  0000		      dw 0
+    898	0700  0714r		      dw c28
+    899	0702  0000		      dw 0
+    900	0704  0000		      dw 0
+    901	0706  0000		      dw 0
+    902	0708  0000		      dw 0
+    903	070A  0000		      dw 0
+    904	070C  0710r		      dw n28
+    905	070E  0000		      dw 0
+    906	0710  52 55 4E		     n28: db 'RUN'
+    907	0713  00		      db 0
+    908				      align 4
+*Warning* mini4th.ASM(906) Segment alignment not strict	enough
+    909	0714			     c28:
+    910	0714  89 16 0016r	      mov [word	ptr sdx],dx
+    911	0718  89 0E 0018r	      mov [word	ptr scx],cx
+    912	071C  89 36 001Ar	      mov [word	ptr ssi],si
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 18
+mini4th.ASM
+
+
+
+    913	0720  89 1E 001Cr	      mov [word	ptr sbx],bx
+    914	0724  89 3E 001Er	      mov [word	ptr sdi],di
+    915	0728  BD 0000e		      lea bp,_getword
+    916	072B  FF D5		      call bp
+    917	072D  8B 16 0016r	      mov dx,[word ptr sdx]
+    918	0731  8B 0E 0018r	      mov cx,[word ptr scx]
+    919	0735  8B 36 001Ar	      mov si,[word ptr ssi]
+    920	0739  8B 1E 001Cr	      mov bx,[word ptr sbx]
+    921	073D  8B 3E 001Er	      mov di,[word ptr sdi]
+    922	0741  8B F0		      mov si,ax
+    923	0743  8B 44 04		      mov ax,[si+04h]
+    924	0746  8B F0		      mov si,ax
+    925	0748  FF D6		      call si
+    926	074A  C3		      ret
+    927	074B  90		     align 4
+*Warning* mini4th.ASM(925) Segment alignment not strict	enough
+    928	074C  06FCr		     w29: dw w28
+    929	074E  0000		      dw 0
+    930	0750  0768r		      dw c29
+    931	0752  0000		      dw 0
+    932	0754  0000		      dw 0
+    933	0756  0000		      dw 0
+    934	0758  0000		      dw 0
+    935	075A  0000		      dw 0
+    936	075C  0760r		      dw n29
+    937	075E  0000		      dw 0
+    938	0760  49 4E 49 54	     n29: db 'INIT'
+    939	0764  00		      db 0
+    940	0765  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(938) Segment alignment not strict	enough
+    941	0768			     c29:
+    942				     align 4
+*Warning* mini4th.ASM(940) Segment alignment not strict	enough
+    943	0768  074Cr		     w30: dw w29
+    944	076A  0000		      dw 0
+    945	076C  0784r		      dw c30
+    946	076E  0000		      dw 0
+    947	0770  0000		      dw 0
+    948	0772  0000		      dw 0
+    949	0774  0000		      dw 0
+    950	0776  0000		      dw 0
+    951	0778  077Cr		      dw n30
+    952	077A  0000		      dw 0
+    953	077C  45 58 49 54	     n30: db 'EXIT'
+    954	0780  00		      db 0
+    955	0781  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(953) Segment alignment not strict	enough
+    956	0784			     c30:
+    957	0784			     caldef:
+    958	0784  51		      push cx
+    959	0785  B1 BE		      mov cl,0BEh
+    960	0787  88 0D		      mov [di],cl
+    961	0789  47		      inc di
+    962	078A  88 05		      mov [di],al
+    963	078C  47		      inc di
+    964	078D  88 25		      mov[di],ah
+    965	078F  47		      inc di
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 19
+mini4th.ASM
+
+
+
+    966	0790  59		      pop cx
+    967	0791  BD 0000e		      lea bp,_fillmem
+    968	0794  FF D5		      call bp
+    969	0796  02		      db b93-a93
+    970	0797			     a93:
+    971	0797  FF D6		      call si
+    972	0799			     b93:
+    973	0799  C3		      ret
+    974	079A			     calldef:
+    975	079A  51		      push cx
+    976	079B  B1 BE		      mov cl,0BEh
+    977	079D  88 0D		      mov [di],cl
+    978	079F  47		      inc di
+    979	07A0  88 05		      mov [di],al
+    980	07A2  47		      inc di
+    981	07A3  88 25		      mov[di],ah
+    982	07A5  47		      inc di
+    983	07A6  59		      pop cx
+    984	07A7  BD 0000e		      lea bp,_fillmem
+    985	07AA  FF D5		      call bp
+    986	07AC  02		      db b94-a94
+    987	07AD			     a94:
+    988	07AD  FF D6		      call si
+    989	07AF			     b94:
+    990	07AF  C3		      ret
+    991	07B0			     defw:
+    992	07B0  04*(00)		      db 04h dup (0)
+    993				     align 4
+*Warning* mini4th.ASM(991) Segment alignment not strict	enough
+    994	07B4  0768r		     w31: dw w30
+    995	07B6  0000		      dw 0
+    996	07B8  07CCr		      dw c31
+    997	07BA  0000		      dw 0
+    998	07BC  0000		      dw 0
+    999	07BE  0000		      dw 0
+   1000	07C0  0000		      dw 0
+   1001	07C2  0000		      dw 0
+   1002	07C4  07C8r		      dw n31
+   1003	07C6  0000		      dw 0
+   1004	07C8  3A		     n31: db ':'
+   1005	07C9  00		      db 0
+   1006	07CA  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1004) Segment alignment not strict enough
+   1007	07CC			     c31:
+   1008	07CC  BE 091Cr		      lea si,[svrc]
+   1009	07CF  8B 04		      mov ax,[si]
+   1010	07D1  8B F8		      mov di,ax
+   1011	07D3  89 16 0016r	      mov [word	ptr sdx],dx
+   1012	07D7  89 0E 0018r	      mov [word	ptr scx],cx
+   1013	07DB  89 36 001Ar	      mov [word	ptr ssi],si
+   1014	07DF  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1015	07E3  89 3E 001Er	      mov [word	ptr sdi],di
+   1016	07E7  BD 0000e		      lea bp,_getword
+   1017	07EA  FF D5		      call bp
+   1018	07EC  8B 16 0016r	      mov dx,[word ptr sdx]
+   1019	07F0  8B 0E 0018r	      mov cx,[word ptr scx]
+   1020	07F4  8B 36 001Ar	      mov si,[word ptr ssi]
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 20
+mini4th.ASM
+
+
+
+   1021	07F8  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1022	07FC  8B 3E 001Er	      mov di,[word ptr sdi]
+   1023	0800  8B F0		      mov si,ax
+   1024	0802  8B C6		      mov ax,si
+   1025	0804  BE 07B0r		      lea si,[defw]
+   1026	0807  89 04		      mov [si],ax
+   1027	0809  8B F0		      mov si,ax
+   1028	080B  B8 079Ar		      lea ax,[calldef]
+   1029	080E  89 44 04		      mov [si+4h],ax
+   1030	0811  8B C7		      mov ax,di
+   1031	0813  89 44 08		      mov [si+8h],ax
+   1032	0816  BD 0000e		      lea bp,_fillmem
+   1033	0819  FF D5		      call bp
+   1034	081B  00		      db b95-a95
+   1035	081C			     a95:
+   1036	081C			     b95:
+   1037	081C  BE 0100r		      lea si,[mode]
+   1038	081F  B8 0000		      mov ax,00h
+   1039	0822  89 04		      mov [si],ax
+   1040	0824  C3		      ret
+   1041	0825  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1039) Segment alignment not strict enough
+   1042	0828  07B4r		     w32: dw w31
+   1043	082A  0000		      dw 0
+   1044	082C  0844r		      dw c32
+   1045	082E  0000		      dw 0
+   1046	0830  0000		      dw 0
+   1047	0832  0000		      dw 0
+   1048	0834  0000		      dw 0
+   1049	0836  0000		      dw 0
+   1050	0838  083Cr		      dw n32
+   1051	083A  0000		      dw 0
+   1052	083C  4D 41 43 52 4F 3A	     n32: db 'MACRO:'
+   1053	0842  00		      db 0
+   1054	0843  90		      align 4
+*Warning* mini4th.ASM(1052) Segment alignment not strict enough
+   1055	0844			     c32:
+   1056	0844  BE 091Cr		      lea si,[svrc]
+   1057	0847  8B 04		      mov ax,[si]
+   1058	0849  8B F8		      mov di,ax
+   1059	084B  89 16 0016r	      mov [word	ptr sdx],dx
+   1060	084F  89 0E 0018r	      mov [word	ptr scx],cx
+   1061	0853  89 36 001Ar	      mov [word	ptr ssi],si
+   1062	0857  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1063	085B  89 3E 001Er	      mov [word	ptr sdi],di
+   1064	085F  BD 0000e		      lea bp,_getword
+   1065	0862  FF D5		      call bp
+   1066	0864  8B 16 0016r	      mov dx,[word ptr sdx]
+   1067	0868  8B 0E 0018r	      mov cx,[word ptr scx]
+   1068	086C  8B 36 001Ar	      mov si,[word ptr ssi]
+   1069	0870  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1070	0874  8B 3E 001Er	      mov di,[word ptr sdi]
+   1071	0878  8B F0		      mov si,ax
+   1072	087A  8B C7		      mov ax,di
+   1073	087C  89 44 04		      mov [si+4h],ax
+   1074	087F  B8 0000		      mov ax,00h
+   1075	0882  89 44 08		      mov [si+8h],ax
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 21
+mini4th.ASM
+
+
+
+   1076	0885  BD 0000e		      lea bp,_fillmem
+   1077	0888  FF D5		      call bp
+   1078	088A  00		      db b96-a96
+   1079	088B			     a96:
+   1080	088B			     b96:
+   1081	088B  BE 0100r		      lea si,[mode]
+   1082	088E  B8 0000		      mov ax,00h
+   1083	0891  89 04		      mov [si],ax
+   1084	0893  C3		      ret
+   1085				     align 4
+*Warning* mini4th.ASM(1083) Segment alignment not strict enough
+   1086	0894  0828r		     w33: dw w32
+   1087	0896  0000		      dw 0
+   1088	0898  08ACr		      dw c33
+   1089	089A  0000		      dw 0
+   1090	089C  0000		      dw 0
+   1091	089E  0000		      dw 0
+   1092	08A0  0000		      dw 0
+   1093	08A2  0000		      dw 0
+   1094	08A4  08A8r		      dw n33
+   1095	08A6  0000		      dw 0
+   1096	08A8  3B		     n33: db ';'
+   1097	08A9  00		      db 0
+   1098	08AA  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1096) Segment alignment not strict enough
+   1099	08AC			     c33:
+   1100	08AC  BD 0000e		      lea bp,_fillmem
+   1101	08AF  FF D5		      call bp
+   1102	08B1  01		      db b97-a97
+   1103	08B2			     a97:
+   1104	08B2  C3		      ret
+   1105	08B3			     b97:
+   1106	08B3  BE 0100r		      lea si,[mode]
+   1107	08B6  B8 0001		      mov ax,01h
+   1108	08B9  89 04		      mov [si],ax
+   1109	08BB  E8 0062		      call beginim
+   1110	08BE  C3		      ret
+   1111	08BF  90		      align 4
+*Warning* mini4th.ASM(1109) Segment alignment not strict enough
+   1112	08C0			     adrim:
+   1113	08C0  04*(00)		      db 04h dup (0)
+   1114				     align 4
+*Warning* mini4th.ASM(1112) Segment alignment not strict enough
+   1115	08C4  0894r		     w34: dw w33
+   1116	08C6  0000		      dw 0
+   1117	08C8  08DCr		      dw c34
+   1118	08CA  0000		      dw 0
+   1119	08CC  0000		      dw 0
+   1120	08CE  0000		      dw 0
+   1121	08D0  0000		      dw 0
+   1122	08D2  0000		      dw 0
+   1123	08D4  08D8r		      dw n34
+   1124	08D6  0000		      dw 0
+   1125	08D8  5B 5B		     n34: db '[['
+   1126	08DA  00		      db 0
+   1127	08DB  90		      align 4
+*Warning* mini4th.ASM(1125) Segment alignment not strict enough
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 22
+mini4th.ASM
+
+
+
+   1128	08DC			     c34:
+   1129	08DC  BE 08C0r		      lea si,[adrim]
+   1130	08DF  8B C7		      mov ax,di
+   1131	08E1  89 04		      mov [si],ax
+   1132	08E3  BD 0000e		      lea bp,_fillmem
+   1133	08E6  FF D5		      call bp
+   1134	08E8  00		      db b98-a98
+   1135	08E9			     a98:
+   1136	08E9			     b98:
+   1137	08E9  C3		      ret
+   1138	08EA  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(1136) Segment alignment not strict enough
+   1139	08EC  08C4r		     w35: dw w34
+   1140	08EE  0000		      dw 0
+   1141	08F0  0904r		      dw c35
+   1142	08F2  0000		      dw 0
+   1143	08F4  0000		      dw 0
+   1144	08F6  0000		      dw 0
+   1145	08F8  0000		      dw 0
+   1146	08FA  0000		      dw 0
+   1147	08FC  0900r		      dw n35
+   1148	08FE  0000		      dw 0
+   1149	0900  5D 5D		     n35: db ']]'
+   1150	0902  00		      db 0
+   1151	0903  90		      align 4
+*Warning* mini4th.ASM(1149) Segment alignment not strict enough
+   1152	0904			     c35:
+   1153	0904  BD 0000e		      lea bp,_fillmem
+   1154	0907  FF D5		      call bp
+   1155	0909  01		      db b99-a99
+   1156	090A			     a99:
+   1157	090A  C3		      ret
+   1158	090B			     b99:
+   1159	090B  BE 08C0r		      lea si,[adrim]
+   1160	090E  8B 34		      mov si,[si]
+   1161	0910  FF D6		      call si
+   1162	0912  BE 08C0r		      lea si,[adrim]
+   1163	0915  8B 34		      mov si,[si]
+   1164	0917  8B FE		      mov di,si
+   1165	0919  C3		      ret
+   1166	091A  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1164) Segment alignment not strict enough
+   1167	091C			     svrc:
+   1168	091C  04*(00)		      db 04h dup (0)
+   1169	0920			     beginim:
+   1170	0920  BE 091Cr		      lea si,[svrc]
+   1171	0923  8B C7		      mov ax,di
+   1172	0925  89 04		      mov [si],ax
+   1173	0927  B8 09C8r		      lea ax,[imcod]
+   1174	092A  8B F8		      mov di,ax
+   1175	092C  BD 0000e		      lea bp,_fillmem
+   1176	092F  FF D5		      call bp
+   1177	0931  00		      db b100-a100
+   1178	0932			     a100:
+   1179	0932			     b100:
+   1180	0932  C3		      ret
+   1181	0933			     endim:
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 23
+mini4th.ASM
+
+
+
+   1182	0933  BD 0000e		      lea bp,_fillmem
+   1183	0936  FF D5		      call bp
+   1184	0938  01		      db b101-a101
+   1185	0939			     a101:
+   1186	0939  C3		      ret
+   1187	093A			     b101:
+   1188	093A  BE 091Cr		      lea si,[svrc]
+   1189	093D  8B 04		      mov ax,[si]
+   1190	093F  8B F8		      mov di,ax
+   1191	0941  E8 0084		      call imcod
+   1192	0944  C3		      ret
+   1193	0945  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1191) Segment alignment not strict enough
+   1194	0948  08ECr		     w36: dw w35
+   1195	094A  0000		      dw 0
+   1196	094C  0960r		      dw c36
+   1197	094E  0000		      dw 0
+   1198	0950  0000		      dw 0
+   1199	0952  0000		      dw 0
+   1200	0954  0000		      dw 0
+   1201	0956  0000		      dw 0
+   1202	0958  095Cr		      dw n36
+   1203	095A  0000		      dw 0
+   1204	095C  5B 2A		     n36: db '[*'
+   1205	095E  00		      db 0
+   1206	095F  90		      align 4
+*Warning* mini4th.ASM(1204) Segment alignment not strict enough
+   1207	0960			     c36:
+   1208	0960  E8 FFBD		      call beginim
+   1209	0963  C3		      ret
+   1210				     align 4
+*Warning* mini4th.ASM(1208) Segment alignment not strict enough
+   1211	0964  0948r		     w37: dw w36
+   1212	0966  0000		      dw 0
+   1213	0968  097Cr		      dw c37
+   1214	096A  0000		      dw 0
+   1215	096C  0000		      dw 0
+   1216	096E  0000		      dw 0
+   1217	0970  0000		      dw 0
+   1218	0972  0000		      dw 0
+   1219	0974  0978r		      dw n37
+   1220	0976  0000		      dw 0
+   1221	0978  2A 5D		     n37: db '*]'
+   1222	097A  00		      db 0
+   1223	097B  90		      align 4
+*Warning* mini4th.ASM(1221) Segment alignment not strict enough
+   1224	097C			     c37:
+   1225	097C  E8 FFB4		      call endim
+   1226	097F  C3		      ret
+   1227				     align 4
+*Warning* mini4th.ASM(1225) Segment alignment not strict enough
+   1228	0980  0964r		     w38: dw w37
+   1229	0982  0000		      dw 0
+   1230	0984  0998r		      dw c38
+   1231	0986  0000		      dw 0
+   1232	0988  0000		      dw 0
+   1233	098A  0000		      dw 0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 24
+mini4th.ASM
+
+
+
+   1234	098C  0000		      dw 0
+   1235	098E  0000		      dw 0
+   1236	0990  0994r		      dw n38
+   1237	0992  0000		      dw 0
+   1238	0994  5B		     n38: db '['
+   1239	0995  00		      db 0
+   1240	0996  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1238) Segment alignment not strict enough
+   1241	0998			     c38:
+   1242	0998  E8 FF85		      call beginim
+   1243	099B  BE 0100r		      lea si,[mode]
+   1244	099E  B8 0001		      mov ax,01h
+   1245	09A1  89 04		      mov [si],ax
+   1246	09A3  C3		      ret
+   1247				     align 4
+*Warning* mini4th.ASM(1245) Segment alignment not strict enough
+   1248	09A4  0980r		     w39: dw w38
+   1249	09A6  0000		      dw 0
+   1250	09A8  09BCr		      dw c39
+   1251	09AA  0000		      dw 0
+   1252	09AC  0000		      dw 0
+   1253	09AE  0000		      dw 0
+   1254	09B0  0000		      dw 0
+   1255	09B2  0000		      dw 0
+   1256	09B4  09B8r		      dw n39
+   1257	09B6  0000		      dw 0
+   1258	09B8  5D		     n39: db ']'
+   1259	09B9  00		      db 0
+   1260	09BA  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1258) Segment alignment not strict enough
+   1261	09BC			     c39:
+   1262	09BC  E8 FF74		      call endim
+   1263	09BF  BE 0100r		      lea si,[mode]
+   1264	09C2  B8 0000		      mov ax,00h
+   1265	09C5  89 04		      mov [si],ax
+   1266	09C7  C3		      ret
+   1267				      align 4
+*Warning* mini4th.ASM(1265) Segment alignment not strict enough
+   1268	09C8			     imcod:
+   1269	09C8  0100*(00)		      db 0100h dup (0)
+   1270				     align 4
+*Warning* mini4th.ASM(1268) Segment alignment not strict enough
+   1271	0AC8  09A4r		     w40: dw w39
+   1272	0ACA  0000		      dw 0
+   1273	0ACC  0AE0r		      dw c40
+   1274	0ACE  0000		      dw 0
+   1275	0AD0  0000		      dw 0
+   1276	0AD2  0000		      dw 0
+   1277	0AD4  0000		      dw 0
+   1278	0AD6  0000		      dw 0
+   1279	0AD8  0ADCr		      dw n40
+   1280	0ADA  0000		      dw 0
+   1281	0ADC  53 56 41		     n40: db 'SVA'
+   1282	0ADF  00		      db 0
+   1283				      align 4
+*Warning* mini4th.ASM(1281) Segment alignment not strict enough
+   1284	0AE0			     c40:
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 25
+mini4th.ASM
+
+
+
+   1285	0AE0  BD 0000e		      lea bp,_fillmem
+   1286	0AE3  FF D5		      call bp
+   1287	0AE5  3C		      db b102-a102
+   1288	0AE6			     a102:
+   1289	0AE6  A3 0014r		      mov [word	ptr sax],ax
+   1290	0AE9  89 16 0016r	      mov [word	ptr sdx],dx
+   1291	0AED  89 0E 0018r	      mov [word	ptr scx],cx
+   1292	0AF1  89 36 001Ar	      mov [word	ptr ssi],si
+   1293	0AF5  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1294	0AF9  89 3E 001Er	      mov [word	ptr sdi],di
+   1295	0AFD  BD 0000e		      lea bp,_getsva
+   1296	0B00  FF D5		      call bp
+   1297	0B02  8B 16 0016r	      mov dx,[word ptr sdx]
+   1298	0B06  8B 0E 0018r	      mov cx,[word ptr scx]
+   1299	0B0A  8B 36 001Ar	      mov si,[word ptr ssi]
+   1300	0B0E  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1301	0B12  8B 3E 001Er	      mov di,[word ptr sdi]
+   1302	0B16  8B F0		      mov si,ax
+   1303	0B18  A1 0014r		      mov ax,[word ptr sax]
+   1304	0B1B  8B C6		      mov ax,si
+   1305	0B1D  83 EB 02		      sub bx,2
+   1306	0B20  89 07		      mov [bx],ax
+   1307	0B22			     b102:
+   1308	0B22  C3		      ret
+   1309	0B23  90		     align 4
+*Warning* mini4th.ASM(1307) Segment alignment not strict enough
+   1310	0B24  0AC8r		     w41: dw w40
+   1311	0B26  0000		      dw 0
+   1312	0B28  0B44r		      dw c41
+   1313	0B2A  0000		      dw 0
+   1314	0B2C  0000		      dw 0
+   1315	0B2E  0000		      dw 0
+   1316	0B30  0000		      dw 0
+   1317	0B32  0000		      dw 0
+   1318	0B34  0B38r		      dw n41
+   1319	0B36  0000		      dw 0
+   1320	0B38  49 4D 4D 45 44 49	41+  n41: db 'IMMEDIATE'
+   1321	      54 45
+   1322	0B41  00		      db 0
+   1323	0B42  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1320) Segment alignment not strict enough
+   1324	0B44			     c41:
+   1325	0B44  BE 07B0r		      lea si,[defw]
+   1326	0B47  8B 34		      mov si,[si]
+   1327	0B49  8B 44 08		      mov ax,[si+08h]
+   1328	0B4C  89 44 04		      mov [si+4h],ax
+   1329	0B4F  C3		      ret
+   1330	0B50			     getparam:
+   1331	0B50  51		      push cx
+   1332	0B51  B1 B8		      mov cl,0B8h
+   1333	0B53  88 0D		      mov [di],cl
+   1334	0B55  47		      inc di
+   1335	0B56  88 05		      mov [di],al
+   1336	0B58  47		      inc di
+   1337	0B59  88 25		      mov[di],ah
+   1338	0B5B  47		      inc di
+   1339	0B5C  59		      pop cx
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 26
+mini4th.ASM
+
+
+
+   1340	0B5D  BD 0000e		      lea bp,_fillmem
+   1341	0B60  FF D5		      call bp
+   1342	0B62  05		      db b103-a103
+   1343	0B63			     a103:
+   1344	0B63  83 EB 02		      sub bx,2
+   1345	0B66  89 07		      mov [bx],ax
+   1346	0B68			     b103:
+   1347	0B68  C3		      ret
+   1348	0B69  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1345) Segment alignment not strict enough
+   1349	0B6C  0B24r		     w42: dw w41
+   1350	0B6E  0000		      dw 0
+   1351	0B70  0B8Cr		      dw c42
+   1352	0B72  0000		      dw 0
+   1353	0B74  0000		      dw 0
+   1354	0B76  0000		      dw 0
+   1355	0B78  0000		      dw 0
+   1356	0B7A  0000		      dw 0
+   1357	0B7C  0B80r		      dw n42
+   1358	0B7E  0000		      dw 0
+   1359	0B80  5B 43 52 45 41 54	45+  n42: db '[CREATE]'
+   1360	      5D
+   1361	0B88  00		      db 0
+   1362	0B89  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(1358) Segment alignment not strict enough
+   1363	0B8C			     c42:
+   1364	0B8C			     code_icreate:
+   1365	0B8C  89 16 0016r	      mov [word	ptr sdx],dx
+   1366	0B90  89 0E 0018r	      mov [word	ptr scx],cx
+   1367	0B94  89 36 001Ar	      mov [word	ptr ssi],si
+   1368	0B98  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1369	0B9C  89 3E 001Er	      mov [word	ptr sdi],di
+   1370	0BA0  BD 0000e		      lea bp,_getword
+   1371	0BA3  FF D5		      call bp
+   1372	0BA5  8B 16 0016r	      mov dx,[word ptr sdx]
+   1373	0BA9  8B 0E 0018r	      mov cx,[word ptr scx]
+   1374	0BAD  8B 36 001Ar	      mov si,[word ptr ssi]
+   1375	0BB1  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1376	0BB5  8B 3E 001Er	      mov di,[word ptr sdi]
+   1377	0BB9  8B F0		      mov si,ax
+   1378	0BBB  B8 0B50r		      lea ax,[getparam]
+   1379	0BBE  89 44 04		      mov [si+4h],ax
+   1380	0BC1  8B C7		      mov ax,di
+   1381	0BC3  89 44 08		      mov [si+8h],ax
+   1382	0BC6  C3		      ret
+   1383	0BC7  90		     align 4
+*Warning* mini4th.ASM(1379) Segment alignment not strict enough
+   1384	0BC8  0B6Cr		     w43: dw w42
+   1385	0BCA  0000		      dw 0
+   1386	0BCC  0BE4r		      dw c43
+   1387	0BCE  0000		      dw 0
+   1388	0BD0  0000		      dw 0
+   1389	0BD2  0000		      dw 0
+   1390	0BD4  0000		      dw 0
+   1391	0BD6  0000		      dw 0
+   1392	0BD8  0BDCr		      dw n43
+   1393	0BDA  0000		      dw 0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 27
+mini4th.ASM
+
+
+
+   1394	0BDC  43 52 45 41 54 45	     n43: db 'CREATE'
+   1395	0BE2  00		      db 0
+   1396	0BE3  90		      align 4
+*Warning* mini4th.ASM(1392) Segment alignment not strict enough
+   1397	0BE4			     c43:
+   1398	0BE4  B8 0B8Cr		      lea ax,[code_icreate]
+   1399	0BE7  51		      push cx
+   1400	0BE8  B1 BE		      mov cl,0BEh
+   1401	0BEA  88 0D		      mov [di],cl
+   1402	0BEC  47		      inc di
+   1403	0BED  88 05		      mov [di],al
+   1404	0BEF  47		      inc di
+   1405	0BF0  88 25		      mov[di],ah
+   1406	0BF2  47		      inc di
+   1407	0BF3  59		      pop cx
+   1408	0BF4  BD 0000e		      lea bp,_fillmem
+   1409	0BF7  FF D5		      call bp
+   1410	0BF9  02		      db b104-a104
+   1411	0BFA			     a104:
+   1412	0BFA  FF D6		      call si
+   1413	0BFC			     b104:
+   1414	0BFC  C3		      ret
+   1415	0BFD			     getrz:
+   1416	0BFD  BD 0000e		      lea bp,_fillmem
+   1417	0C00  FF D5		      call bp
+   1418	0C02  05		      db b105-a105
+   1419	0C03			     a105:
+   1420	0C03  83 EB 02		      sub bx,2
+   1421	0C06  89 07		      mov [bx],ax
+   1422	0C08			     b105:
+   1423	0C08  C3		      ret
+   1424	0C09  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1420) Segment alignment not strict enough
+   1425	0C0C  0BC8r		     w44: dw w43
+   1426	0C0E  0000		      dw 0
+   1427	0C10  0C28r		      dw c44
+   1428	0C12  0000		      dw 0
+   1429	0C14  0000		      dw 0
+   1430	0C16  0000		      dw 0
+   1431	0C18  0000		      dw 0
+   1432	0C1A  0000		      dw 0
+   1433	0C1C  0C20r		      dw n44
+   1434	0C1E  0000		      dw 0
+   1435	0C20  44 4F 45 53 3E	     n44: db 'DOES>'
+   1436	0C25  00		      db 0
+   1437	0C26  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1433) Segment alignment not strict enough
+   1438	0C28			     c44:
+   1439	0C28  BD 0000e		      lea bp,_fillmem
+   1440	0C2B  FF D5		      call bp
+   1441	0C2D  3A		      db b106-a106
+   1442	0C2E			     a106:
+   1443	0C2E  A3 0014r		      mov [word	ptr sax],ax
+   1444	0C31  89 16 0016r	      mov [word	ptr sdx],dx
+   1445	0C35  89 0E 0018r	      mov [word	ptr scx],cx
+   1446	0C39  89 36 001Ar	      mov [word	ptr ssi],si
+   1447	0C3D  89 1E 001Cr	      mov [word	ptr sbx],bx
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 28
+mini4th.ASM
+
+
+
+   1448	0C41  89 3E 001Er	      mov [word	ptr sdi],di
+   1449	0C45  BD 0000e		      lea bp,_getsva
+   1450	0C48  FF D5		      call bp
+   1451	0C4A  8B 16 0016r	      mov dx,[word ptr sdx]
+   1452	0C4E  8B 0E 0018r	      mov cx,[word ptr scx]
+   1453	0C52  8B 36 001Ar	      mov si,[word ptr ssi]
+   1454	0C56  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1455	0C5A  8B 3E 001Er	      mov di,[word ptr sdi]
+   1456	0C5E  8B F0		      mov si,ax
+   1457	0C60  A1 0014r		      mov ax,[word ptr sax]
+   1458	0C63  8B 44 04		      mov ax,[si+04h]
+   1459	0C66  8B F0		      mov si,ax
+   1460	0C68			     b106:
+   1461	0C68  B8 0000		      mov ax,00h
+   1462	0C6B  8B D7		      mov dx,di
+   1463	0C6D  51		      push cx
+   1464	0C6E  B1 B8		      mov cl,0B8h
+   1465	0C70  88 0D		      mov [di],cl
+   1466	0C72  47		      inc di
+   1467	0C73  88 05		      mov [di],al
+   1468	0C75  47		      inc di
+   1469	0C76  88 25		      mov[di],ah
+   1470	0C78  47		      inc di
+   1471	0C79  59		      pop cx
+   1472	0C7A  BD 0000e		      lea bp,_fillmem
+   1473	0C7D  FF D5		      call bp
+   1474	0C7F  04		      db b107-a107
+   1475	0C80			     a107:
+   1476	0C80  89 44 04		      mov [si+4h],ax
+   1477	0C83  C3		      ret
+   1478	0C84			     b107:
+   1479	0C84  8B C7		      mov ax,di
+   1480	0C86  8B FA		      mov di,dx
+   1481	0C88  51		      push cx
+   1482	0C89  B1 B8		      mov cl,0B8h
+   1483	0C8B  88 0D		      mov [di],cl
+   1484	0C8D  47		      inc di
+   1485	0C8E  88 05		      mov [di],al
+   1486	0C90  47		      inc di
+   1487	0C91  88 25		      mov[di],ah
+   1488	0C93  47		      inc di
+   1489	0C94  59		      pop cx
+   1490	0C95  BD 0000e		      lea bp,_fillmem
+   1491	0C98  FF D5		      call bp
+   1492	0C9A  09		      db b108-a108
+   1493	0C9B			     a108:
+   1494	0C9B  89 44 04		      mov [si+4h],ax
+   1495	0C9E  C3		      ret
+   1496	0C9F  BE 0B50r		      lea si,[getparam]
+   1497	0CA2  FF D6		      call si
+   1498	0CA4			     b108:
+   1499	0CA4  B8 0000		      mov ax,00h
+   1500	0CA7  8B D7		      mov dx,di
+   1501	0CA9  51		      push cx
+   1502	0CAA  B1 B8		      mov cl,0B8h
+   1503	0CAC  88 0D		      mov [di],cl
+   1504	0CAE  47		      inc di
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 29
+mini4th.ASM
+
+
+
+   1505	0CAF  88 05		      mov [di],al
+   1506	0CB1  47		      inc di
+   1507	0CB2  88 25		      mov[di],ah
+   1508	0CB4  47		      inc di
+   1509	0CB5  59		      pop cx
+   1510	0CB6  BD 0000e		      lea bp,_fillmem
+   1511	0CB9  FF D5		      call bp
+   1512	0CBB  06		      db b109-a109
+   1513	0CBC			     a109:
+   1514	0CBC  BE 079Ar		      lea si,[calldef]
+   1515	0CBF  FF D6		      call si
+   1516	0CC1  C3		      ret
+   1517	0CC2			     b109:
+   1518	0CC2  8B C7		      mov ax,di
+   1519	0CC4  8B FA		      mov di,dx
+   1520	0CC6  51		      push cx
+   1521	0CC7  B1 B8		      mov cl,0B8h
+   1522	0CC9  88 0D		      mov [di],cl
+   1523	0CCB  47		      inc di
+   1524	0CCC  88 05		      mov [di],al
+   1525	0CCE  47		      inc di
+   1526	0CCF  88 25		      mov[di],ah
+   1527	0CD1  47		      inc di
+   1528	0CD2  59		      pop cx
+   1529	0CD3  BD 0000e		      lea bp,_fillmem
+   1530	0CD6  FF D5		      call bp
+   1531	0CD8  06		      db b110-a110
+   1532	0CD9			     a110:
+   1533	0CD9  BE 079Ar		      lea si,[calldef]
+   1534	0CDC  FF D6		      call si
+   1535	0CDE  C3		      ret
+   1536	0CDF			     b110:
+   1537	0CDF  C3		      ret
+   1538				     align 4
+*Warning* mini4th.ASM(1534) Segment alignment not strict enough
+   1539	0CE0  0C0Cr		     w45: dw w44
+   1540	0CE2  0000		      dw 0
+   1541	0CE4  0CFCr		      dw c45
+   1542	0CE6  0000		      dw 0
+   1543	0CE8  0000		      dw 0
+   1544	0CEA  0000		      dw 0
+   1545	0CEC  0000		      dw 0
+   1546	0CEE  0000		      dw 0
+   1547	0CF0  0CF4r		      dw n45
+   1548	0CF2  0000		      dw 0
+   1549	0CF4  41 4C 4C 4F 54	     n45: db 'ALLOT'
+   1550	0CF9  00		      db 0
+   1551	0CFA  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1547) Segment alignment not strict enough
+   1552	0CFC			     c45:
+   1553	0CFC  BD 0000e		      lea bp,_fillmem
+   1554	0CFF  FF D5		      call bp
+   1555	0D01  0B		      db b111-a111
+   1556	0D02			     a111:
+   1557	0D02  8B 07		      mov ax,[bx]
+   1558	0D04  83 C3 02		      add bx,2
+   1559	0D07  8B D7		      mov dx,di
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 30
+mini4th.ASM
+
+
+
+   1560	0D09  03 C2		      add ax,dx
+   1561	0D0B  8B F8		      mov di,ax
+   1562	0D0D			     b111:
+   1563	0D0D  C3		      ret
+   1564	0D0E  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(1560) Segment alignment not strict enough
+   1565	0D10  0CE0r		     w46: dw w45
+   1566	0D12  0000		      dw 0
+   1567	0D14  0D30r		      dw c46
+   1568	0D16  0000		      dw 0
+   1569	0D18  0000		      dw 0
+   1570	0D1A  0000		      dw 0
+   1571	0D1C  0000		      dw 0
+   1572	0D1E  0000		      dw 0
+   1573	0D20  0D24r		      dw n46
+   1574	0D22  0000		      dw 0
+   1575	0D24  41 4C 4C 4F 54 57	4C+  n46: db 'ALLOTWLIT'
+   1576	      49 54
+   1577	0D2D  00		      db 0
+   1578	0D2E  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1573) Segment alignment not strict enough
+   1579	0D30			     c46:
+   1580	0D30  89 16 0016r	      mov [word	ptr sdx],dx
+   1581	0D34  89 0E 0018r	      mov [word	ptr scx],cx
+   1582	0D38  89 36 001Ar	      mov [word	ptr ssi],si
+   1583	0D3C  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1584	0D40  89 3E 001Er	      mov [word	ptr sdi],di
+   1585	0D44  BD 0000e		      lea bp,_scanhex
+   1586	0D47  FF D5		      call bp
+   1587	0D49  8B 16 0016r	      mov dx,[word ptr sdx]
+   1588	0D4D  8B 0E 0018r	      mov cx,[word ptr scx]
+   1589	0D51  8B 36 001Ar	      mov si,[word ptr ssi]
+   1590	0D55  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1591	0D59  8B 3E 001Er	      mov di,[word ptr sdi]
+   1592	0D5D  8B D0		      mov dx,ax
+   1593	0D5F  8B C7		      mov ax,di
+   1594	0D61  03 C2		      add ax,dx
+   1595	0D63  8B F8		      mov di,ax
+   1596	0D65  C3		      ret
+   1597	0D66  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(1592) Segment alignment not strict enough
+   1598	0D68  0D10r		     w47: dw w46
+   1599	0D6A  0000		      dw 0
+   1600	0D6C  0D80r		      dw c47
+   1601	0D6E  0000		      dw 0
+   1602	0D70  0000		      dw 0
+   1603	0D72  0000		      dw 0
+   1604	0D74  0000		      dw 0
+   1605	0D76  0000		      dw 0
+   1606	0D78  0D7Cr		      dw n47
+   1607	0D7A  0000		      dw 0
+   1608	0D7C  2C		     n47: db ','
+   1609	0D7D  00		      db 0
+   1610	0D7E  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1605) Segment alignment not strict enough
+   1611	0D80			     c47:
+   1612	0D80  BD 0000e		      lea bp,_fillmem
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 31
+mini4th.ASM
+
+
+
+   1613	0D83  FF D5		      call bp
+   1614	0D85  12		      db b112-a112
+   1615	0D86			     a112:
+   1616	0D86  8B 07		      mov ax,[bx]
+   1617	0D88  83 C3 02		      add bx,2
+   1618	0D8B  8B F7		      mov si,di
+   1619	0D8D  89 04		      mov [si],ax
+   1620	0D8F  B8 0004		      mov ax,04h
+   1621	0D92  8B D7		      mov dx,di
+   1622	0D94  03 C2		      add ax,dx
+   1623	0D96  8B F8		      mov di,ax
+   1624	0D98			     b112:
+   1625	0D98  C3		      ret
+   1626	0D99  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1621) Segment alignment not strict enough
+   1627	0D9C  0D68r		     w48: dw w47
+   1628	0D9E  0000		      dw 0
+   1629	0DA0  0DB4r		      dw c48
+   1630	0DA2  0000		      dw 0
+   1631	0DA4  0000		      dw 0
+   1632	0DA6  0000		      dw 0
+   1633	0DA8  0000		      dw 0
+   1634	0DAA  0000		      dw 0
+   1635	0DAC  0DB0r		      dw n48
+   1636	0DAE  0000		      dw 0
+   1637	0DB0  43 2C		     n48: db 'C,'
+   1638	0DB2  00		      db 0
+   1639	0DB3  90		      align 4
+*Warning* mini4th.ASM(1634) Segment alignment not strict enough
+   1640	0DB4			     c48:
+   1641	0DB4  BD 0000e		      lea bp,_fillmem
+   1642	0DB7  FF D5		      call bp
+   1643	0DB9  12		      db b113-a113
+   1644	0DBA			     a113:
+   1645	0DBA  8B 07		      mov ax,[bx]
+   1646	0DBC  83 C3 02		      add bx,2
+   1647	0DBF  8B F7		      mov si,di
+   1648	0DC1  88 04		      mov [byte	ptr si],al
+   1649	0DC3  B8 0001		      mov ax,01h
+   1650	0DC6  8B D7		      mov dx,di
+   1651	0DC8  03 C2		      add ax,dx
+   1652	0DCA  8B F8		      mov di,ax
+   1653	0DCC			     b113:
+   1654	0DCC  C3		      ret
+   1655	0DCD  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1650) Segment alignment not strict enough
+   1656	0DD0  0D9Cr		     w49: dw w48
+   1657	0DD2  0000		      dw 0
+   1658	0DD4  0DE8r		      dw c49
+   1659	0DD6  0000		      dw 0
+   1660	0DD8  0000		      dw 0
+   1661	0DDA  0000		      dw 0
+   1662	0DDC  0000		      dw 0
+   1663	0DDE  0000		      dw 0
+   1664	0DE0  0DE4r		      dw n49
+   1665	0DE2  0000		      dw 0
+   1666	0DE4  27		     n49: db '''
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 32
+mini4th.ASM
+
+
+
+*Warning* mini4th.ASM(1661) Missing end	quote
+   1667	0DE5  00		      db 0
+   1668	0DE6  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1663) Segment alignment not strict enough
+   1669	0DE8			     c49:
+   1670	0DE8  89 16 0016r	      mov [word	ptr sdx],dx
+   1671	0DEC  89 0E 0018r	      mov [word	ptr scx],cx
+   1672	0DF0  89 36 001Ar	      mov [word	ptr ssi],si
+   1673	0DF4  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1674	0DF8  89 3E 001Er	      mov [word	ptr sdi],di
+   1675	0DFC  BD 0000e		      lea bp,_getword
+   1676	0DFF  FF D5		      call bp
+   1677	0E01  8B 16 0016r	      mov dx,[word ptr sdx]
+   1678	0E05  8B 0E 0018r	      mov cx,[word ptr scx]
+   1679	0E09  8B 36 001Ar	      mov si,[word ptr ssi]
+   1680	0E0D  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1681	0E11  8B 3E 001Er	      mov di,[word ptr sdi]
+   1682	0E15  8B F0		      mov si,ax
+   1683	0E17  8B C6		      mov ax,si
+   1684	0E19  51		      push cx
+   1685	0E1A  B1 B8		      mov cl,0B8h
+   1686	0E1C  88 0D		      mov [di],cl
+   1687	0E1E  47		      inc di
+   1688	0E1F  88 05		      mov [di],al
+   1689	0E21  47		      inc di
+   1690	0E22  88 25		      mov[di],ah
+   1691	0E24  47		      inc di
+   1692	0E25  59		      pop cx
+   1693	0E26  BD 0000e		      lea bp,_fillmem
+   1694	0E29  FF D5		      call bp
+   1695	0E2B  05		      db b114-a114
+   1696	0E2C			     a114:
+   1697	0E2C  83 EB 02		      sub bx,2
+   1698	0E2F  89 07		      mov [bx],ax
+   1699	0E31			     b114:
+   1700	0E31  C3		      ret
+   1701	0E32			     ewrz:
+   1702	0E32  8B F0		      mov si,ax
+   1703	0E34  E8 F2B7		      call execword
+   1704	0E37  C3		      ret
+   1705				     align 4
+*Warning* mini4th.ASM(1700) Segment alignment not strict enough
+   1706	0E38  0DD0r		     w50: dw w49
+   1707	0E3A  0000		      dw 0
+   1708	0E3C  0E58r		      dw c50
+   1709	0E3E  0000		      dw 0
+   1710	0E40  0000		      dw 0
+   1711	0E42  0000		      dw 0
+   1712	0E44  0000		      dw 0
+   1713	0E46  0000		      dw 0
+   1714	0E48  0E4Cr		      dw n50
+   1715	0E4A  0000		      dw 0
+   1716	0E4C  45 58 45 43 55 54	45+  n50: db 'EXECUTE1'
+   1717	      31
+   1718	0E54  00		      db 0
+   1719	0E55  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(1713) Segment alignment not strict enough
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 33
+mini4th.ASM
+
+
+
+   1720	0E58			     c50:
+   1721	0E58  BD 0000e		      lea bp,_fillmem
+   1722	0E5B  FF D5		      call bp
+   1723	0E5D  0A		      db b115-a115
+   1724	0E5E			     a115:
+   1725	0E5E  8B 07		      mov ax,[bx]
+   1726	0E60  83 C3 02		      add bx,2
+   1727	0E63  BE 0E32r		      lea si,[ewrz]
+   1728	0E66  FF D6		      call si
+   1729	0E68			     b115:
+   1730	0E68  C3		      ret
+   1731	0E69  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(1725) Segment alignment not strict enough
+   1732	0E6C  0E38r		     w51: dw w50
+   1733	0E6E  0000		      dw 0
+   1734	0E70  0E88r		      dw c51
+   1735	0E72  0000		      dw 0
+   1736	0E74  0000		      dw 0
+   1737	0E76  0000		      dw 0
+   1738	0E78  0000		      dw 0
+   1739	0E7A  0000		      dw 0
+   1740	0E7C  0E80r		      dw n51
+   1741	0E7E  0000		      dw 0
+   1742	0E80  45 58 45 43 55 54	45   n51: db 'EXECUTE'
+   1743	0E87  00		      db 0
+   1744				      align 4
+*Warning* mini4th.ASM(1738) Segment alignment not strict enough
+   1745	0E88			     c51:
+   1746	0E88  BD 0000e		      lea bp,_fillmem
+   1747	0E8B  FF D5		      call bp
+   1748	0E8D  0C		      db b116-a116
+   1749	0E8E			     a116:
+   1750	0E8E  8B 37		      mov si,[bx]
+   1751	0E90  83 C3 02		      add bx,2
+   1752	0E93  8B 44 08		      mov ax,[si+08h]
+   1753	0E96  8B F0		      mov si,ax
+   1754	0E98  FF D6		      call si
+   1755	0E9A			     b116:
+   1756	0E9A  C3		      ret
+   1757	0E9B  90		     align 4
+*Warning* mini4th.ASM(1751) Segment alignment not strict enough
+   1758	0E9C  0E6Cr		     w52: dw w51
+   1759	0E9E  0000		      dw 0
+   1760	0EA0  0EB8r		      dw c52
+   1761	0EA2  0000		      dw 0
+   1762	0EA4  0000		      dw 0
+   1763	0EA6  0000		      dw 0
+   1764	0EA8  0000		      dw 0
+   1765	0EAA  0000		      dw 0
+   1766	0EAC  0EB0r		      dw n52
+   1767	0EAE  0000		      dw 0
+   1768	0EB0  43 41 4C 4C	     n52: db 'CALL'
+   1769	0EB4  00		      db 0
+   1770	0EB5  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(1764) Segment alignment not strict enough
+   1771	0EB8			     c52:
+   1772	0EB8  BD 0000e		      lea bp,_fillmem
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 34
+mini4th.ASM
+
+
+
+   1773	0EBB  FF D5		      call bp
+   1774	0EBD  07		      db b117-a117
+   1775	0EBE			     a117:
+   1776	0EBE  8B 37		      mov si,[bx]
+   1777	0EC0  83 C3 02		      add bx,2
+   1778	0EC3  FF D6		      call si
+   1779	0EC5			     b117:
+   1780	0EC5  C3		      ret
+   1781	0EC6  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(1775) Segment alignment not strict enough
+   1782	0EC8  0E9Cr		     w53: dw w52
+   1783	0ECA  0000		      dw 0
+   1784	0ECC  0EE4r		      dw c53
+   1785	0ECE  0000		      dw 0
+   1786	0ED0  0000		      dw 0
+   1787	0ED2  0000		      dw 0
+   1788	0ED4  0000		      dw 0
+   1789	0ED6  0000		      dw 0
+   1790	0ED8  0EDCr		      dw n53
+   1791	0EDA  0000		      dw 0
+   1792	0EDC  43 4F 4D 50 49 4C	45   n53: db 'COMPILE'
+   1793	0EE3  00		      db 0
+   1794				      align 4
+*Warning* mini4th.ASM(1788) Segment alignment not strict enough
+   1795	0EE4			     c53:
+   1796	0EE4  89 16 0016r	      mov [word	ptr sdx],dx
+   1797	0EE8  89 0E 0018r	      mov [word	ptr scx],cx
+   1798	0EEC  89 36 001Ar	      mov [word	ptr ssi],si
+   1799	0EF0  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1800	0EF4  89 3E 001Er	      mov [word	ptr sdi],di
+   1801	0EF8  BD 0000e		      lea bp,_getword
+   1802	0EFB  FF D5		      call bp
+   1803	0EFD  8B 16 0016r	      mov dx,[word ptr sdx]
+   1804	0F01  8B 0E 0018r	      mov cx,[word ptr scx]
+   1805	0F05  8B 36 001Ar	      mov si,[word ptr ssi]
+   1806	0F09  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1807	0F0D  8B 3E 001Er	      mov di,[word ptr sdi]
+   1808	0F11  8B F0		      mov si,ax
+   1809	0F13  8B 44 08		      mov ax,[si+08h]
+   1810	0F16  51		      push cx
+   1811	0F17  B1 B8		      mov cl,0B8h
+   1812	0F19  88 0D		      mov [di],cl
+   1813	0F1B  47		      inc di
+   1814	0F1C  88 05		      mov [di],al
+   1815	0F1E  47		      inc di
+   1816	0F1F  88 25		      mov[di],ah
+   1817	0F21  47		      inc di
+   1818	0F22  59		      pop cx
+   1819	0F23  8B C6		      mov ax,si
+   1820	0F25  51		      push cx
+   1821	0F26  B1 BA		      mov cl,0BAh
+   1822	0F28  88 0D		      mov [di],cl
+   1823	0F2A  47		      inc di
+   1824	0F2B  88 05		      mov [di],al
+   1825	0F2D  47		      inc di
+   1826	0F2E  88 25		      mov[di],ah
+   1827	0F30  47		      inc di
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 35
+mini4th.ASM
+
+
+
+   1828	0F31  59		      pop cx
+   1829	0F32  8B 44 04		      mov ax,[si+04h]
+   1830	0F35  51		      push cx
+   1831	0F36  B1 BE		      mov cl,0BEh
+   1832	0F38  88 0D		      mov [di],cl
+   1833	0F3A  47		      inc di
+   1834	0F3B  88 05		      mov [di],al
+   1835	0F3D  47		      inc di
+   1836	0F3E  88 25		      mov[di],ah
+   1837	0F40  47		      inc di
+   1838	0F41  59		      pop cx
+   1839	0F42  BD 0000e		      lea bp,_fillmem
+   1840	0F45  FF D5		      call bp
+   1841	0F47  02		      db b118-a118
+   1842	0F48			     a118:
+   1843	0F48  FF D6		      call si
+   1844	0F4A			     b118:
+   1845	0F4A  C3		      ret
+   1846	0F4B  90		     align 4
+*Warning* mini4th.ASM(1840) Segment alignment not strict enough
+   1847	0F4C  0EC8r		     w54: dw w53
+   1848	0F4E  0000		      dw 0
+   1849	0F50  0F6Cr		      dw c54
+   1850	0F52  0000		      dw 0
+   1851	0F54  0000		      dw 0
+   1852	0F56  0000		      dw 0
+   1853	0F58  0000		      dw 0
+   1854	0F5A  0000		      dw 0
+   1855	0F5C  0F60r		      dw n54
+   1856	0F5E  0000		      dw 0
+   1857	0F60  5B 43 4F 4D 50 49	4C+  n54: db '[COMPILE]'
+   1858	      45 5D
+   1859	0F69  00		      db 0
+   1860	0F6A  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(1853) Segment alignment not strict enough
+   1861	0F6C			     c54:
+   1862	0F6C  89 16 0016r	      mov [word	ptr sdx],dx
+   1863	0F70  89 0E 0018r	      mov [word	ptr scx],cx
+   1864	0F74  89 36 001Ar	      mov [word	ptr ssi],si
+   1865	0F78  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1866	0F7C  89 3E 001Er	      mov [word	ptr sdi],di
+   1867	0F80  BD 0000e		      lea bp,_getword
+   1868	0F83  FF D5		      call bp
+   1869	0F85  8B 16 0016r	      mov dx,[word ptr sdx]
+   1870	0F89  8B 0E 0018r	      mov cx,[word ptr scx]
+   1871	0F8D  8B 36 001Ar	      mov si,[word ptr ssi]
+   1872	0F91  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1873	0F95  8B 3E 001Er	      mov di,[word ptr sdi]
+   1874	0F99  8B F0		      mov si,ax
+   1875	0F9B  E8 F150		      call execword
+   1876	0F9E  C3		      ret
+   1877	0F9F  90		     align 4
+*Warning* mini4th.ASM(1870) Segment alignment not strict enough
+   1878	0FA0  0F4Cr		     w55: dw w54
+   1879	0FA2  0000		      dw 0
+   1880	0FA4  0FBCr		      dw c55
+   1881	0FA6  0000		      dw 0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 36
+mini4th.ASM
+
+
+
+   1882	0FA8  0000		      dw 0
+   1883	0FAA  0000		      dw 0
+   1884	0FAC  0000		      dw 0
+   1885	0FAE  0000		      dw 0
+   1886	0FB0  0FB4r		      dw n55
+   1887	0FB2  0000		      dw 0
+   1888	0FB4  43 41 4C 4C 41 44	52   n55: db 'CALLADR'
+   1889	0FBB  00		      db 0
+   1890				      align 4
+*Warning* mini4th.ASM(1883) Segment alignment not strict enough
+   1891	0FBC			     c55:
+   1892	0FBC  BD 0000e		      lea bp,_fillmem
+   1893	0FBF  FF D5		      call bp
+   1894	0FC1  09		      db b119-a119
+   1895	0FC2			     a119:
+   1896	0FC2  8B 07		      mov ax,[bx]
+   1897	0FC4  83 C3 02		      add bx,2
+   1898	0FC7  8B F0		      mov si,ax
+   1899	0FC9  FF D6		      call si
+   1900	0FCB			     b119:
+   1901	0FCB  C3		      ret
+   1902				      align 4
+*Warning* mini4th.ASM(1895) Segment alignment not strict enough
+   1903	0FCC			     abifn:
+   1904	0FCC  04*(00)		      db 04h dup (0)
+   1905				     align 4
+*Warning* mini4th.ASM(1898) Segment alignment not strict enough
+   1906	0FD0  0FA0r		     w56: dw w55
+   1907	0FD2  0000		      dw 0
+   1908	0FD4  0FE8r		      dw c56
+   1909	0FD6  0000		      dw 0
+   1910	0FD8  0000		      dw 0
+   1911	0FDA  0000		      dw 0
+   1912	0FDC  0000		      dw 0
+   1913	0FDE  0000		      dw 0
+   1914	0FE0  0FE4r		      dw n56
+   1915	0FE2  0000		      dw 0
+   1916	0FE4  49 46 4E		     n56: db 'IFN'
+   1917	0FE7  00		      db 0
+   1918				      align 4
+*Warning* mini4th.ASM(1911) Segment alignment not strict enough
+   1919	0FE8			     c56:
+   1920	0FE8  BD 0000e		      lea bp,_fillmem
+   1921	0FEB  FF D5		      call bp
+   1922	0FED  05		      db b120-a120
+   1923	0FEE			     a120:
+   1924	0FEE  8B 07		      mov ax,[bx]
+   1925	0FF0  83 C3 02		      add bx,2
+   1926	0FF3			     b120:
+   1927	0FF3  8B C7		      mov ax,di
+   1928	0FF5  BE 0FCCr		      lea si,[abifn]
+   1929	0FF8  89 04		      mov [si],ax
+   1930	0FFA  BD 0000e		      lea bp,_fillmem
+   1931	0FFD  FF D5		      call bp
+   1932	0FFF  05		      db b121-a121
+   1933	1000			     a121:
+   1934	1000  3D 0000		      cmp ax,0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 37
+mini4th.ASM
+
+
+
+   1935	1003  7D 00		      jge lifp
+   1936	1005			     lifp:
+   1937	1005			     b121:
+   1938	1005  89 16 0016r	      mov [word	ptr sdx],dx
+   1939	1009  89 0E 0018r	      mov [word	ptr scx],cx
+   1940	100D  89 36 001Ar	      mov [word	ptr ssi],si
+   1941	1011  89 1E 001Cr	      mov [word	ptr sbx],bx
+   1942	1015  89 3E 001Er	      mov [word	ptr sdi],di
+   1943	1019  BD 0000e		      lea bp,_getword
+   1944	101C  FF D5		      call bp
+   1945	101E  8B 16 0016r	      mov dx,[word ptr sdx]
+   1946	1022  8B 0E 0018r	      mov cx,[word ptr scx]
+   1947	1026  8B 36 001Ar	      mov si,[word ptr ssi]
+   1948	102A  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   1949	102E  8B 3E 001Er	      mov di,[word ptr sdi]
+   1950	1032  8B F0		      mov si,ax
+   1951	1034  E8 F0B7		      call execword
+   1952	1037  BE 0FCCr		      lea si,[abifn]
+   1953	103A  8B 34		      mov si,[si]
+   1954	103C  8B C7		      mov ax,di
+   1955	103E  8B C8		      mov cx,ax
+   1956	1040  2B CE		      sub cx,si
+   1957	1042  83 E9 05		      sub cx,5
+   1958	1045  88 4C 04		      mov [byte	ptr si+4],cl
+   1959	1048  C3		      ret
+   1960	1049  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(1953) Segment alignment not strict enough
+   1961	104C			     wthen:
+   1962				     align 4
+*Warning* mini4th.ASM(1955) Segment alignment not strict enough
+   1963	104C  0FD0r		     w57: dw w56
+   1964	104E  0000		      dw 0
+   1965	1050  1068r		      dw c57
+   1966	1052  0000		      dw 0
+   1967	1054  0000		      dw 0
+   1968	1056  0000		      dw 0
+   1969	1058  0000		      dw 0
+   1970	105A  0000		      dw 0
+   1971	105C  1060r		      dw n57
+   1972	105E  0000		      dw 0
+   1973	1060  54 48 45 4E	     n57: db 'THEN'
+   1974	1064  00		      db 0
+   1975	1065  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(1968) Segment alignment not strict enough
+   1976	1068			     c57:
+   1977	1068  C3		      ret
+   1978	1069  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(1971) Segment alignment not strict enough
+   1979	106C			     abif:
+   1980	106C  04*(00)		      db 04h dup (0)
+   1981				     align 4
+*Warning* mini4th.ASM(1974) Segment alignment not strict enough
+   1982	1070  104Cr		     w58: dw w57
+   1983	1072  0000		      dw 0
+   1984	1074  1088r		      dw c58
+   1985	1076  0000		      dw 0
+   1986	1078  0000		      dw 0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 38
+mini4th.ASM
+
+
+
+   1987	107A  0000		      dw 0
+   1988	107C  0000		      dw 0
+   1989	107E  0000		      dw 0
+   1990	1080  1084r		      dw n58
+   1991	1082  0000		      dw 0
+   1992	1084  49 46		     n58: db 'IF'
+   1993	1086  00		      db 0
+   1994	1087  90		      align 4
+*Warning* mini4th.ASM(1987) Segment alignment not strict enough
+   1995	1088			     c58:
+   1996	1088  BD 0000e		      lea bp,_fillmem
+   1997	108B  FF D5		      call bp
+   1998	108D  05		      db b122-a122
+   1999	108E			     a122:
+   2000	108E  8B 07		      mov ax,[bx]
+   2001	1090  83 C3 02		      add bx,2
+   2002	1093			     b122:
+   2003	1093  8B C7		      mov ax,di
+   2004	1095  BE 106Cr		      lea si,[abif]
+   2005	1098  89 04		      mov [si],ax
+   2006	109A  BD 0000e		      lea bp,_fillmem
+   2007	109D  FF D5		      call bp
+   2008	109F  05		      db b123-a123
+   2009	10A0			     a123:
+   2010	10A0  3D 0000		      cmp ax,0
+   2011	10A3  74 00		      je lif
+   2012	10A5			     lif:
+   2013	10A5			     b123:
+   2014	10A5			     loopif:
+   2015	10A5  89 16 0016r	      mov [word	ptr sdx],dx
+   2016	10A9  89 0E 0018r	      mov [word	ptr scx],cx
+   2017	10AD  89 36 001Ar	      mov [word	ptr ssi],si
+   2018	10B1  89 1E 001Cr	      mov [word	ptr sbx],bx
+   2019	10B5  89 3E 001Er	      mov [word	ptr sdi],di
+   2020	10B9  BD 0000e		      lea bp,_getword
+   2021	10BC  FF D5		      call bp
+   2022	10BE  8B 16 0016r	      mov dx,[word ptr sdx]
+   2023	10C2  8B 0E 0018r	      mov cx,[word ptr scx]
+   2024	10C6  8B 36 001Ar	      mov si,[word ptr ssi]
+   2025	10CA  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   2026	10CE  8B 3E 001Er	      mov di,[word ptr sdi]
+   2027	10D2  8B F0		      mov si,ax
+   2028	10D4  8B D6		      mov dx,si
+   2029	10D6  B8 104Cr		      lea ax,[wthen]
+   2030	10D9  2B C2		      sub ax,dx
+   2031	10DB  BA 7FFF		      mov dx,7FFFh
+   2032	10DE  23 C2		      and ax,dx
+   2033	10E0  3D 0000		      cmp ax,0
+   2034	10E3  74 0B		      je lthen
+   2035	10E5  E8 F006		      call execword
+   2036	10E8  B8 0000		      mov ax,00h
+   2037	10EB  3D 0000		      cmp ax,0
+   2038	10EE  74 B5		      je loopif
+   2039	10F0			     lthen:
+   2040	10F0  BE 106Cr		      lea si,[abif]
+   2041	10F3  8B 34		      mov si,[si]
+   2042	10F5  8B C7		      mov ax,di
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 39
+mini4th.ASM
+
+
+
+   2043	10F7  8B C8		      mov cx,ax
+   2044	10F9  2B CE		      sub cx,si
+   2045	10FB  83 E9 05		      sub cx,5
+   2046	10FE  88 4C 04		      mov [byte	ptr si+4],cl
+   2047	1101  C3		      ret
+   2048	1102  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(2041) Segment alignment not strict enough
+   2049	1104			     labels:
+   2050	1104  0800*(00)		      db 0800h dup (0)
+   2051				     align 4
+*Warning* mini4th.ASM(2044) Segment alignment not strict enough
+   2052	1904  1070r		     w59: dw w58
+   2053	1906  0000		      dw 0
+   2054	1908  1924r		      dw c59
+   2055	190A  0000		      dw 0
+   2056	190C  0000		      dw 0
+   2057	190E  0000		      dw 0
+   2058	1910  0000		      dw 0
+   2059	1912  0000		      dw 0
+   2060	1914  1918r		      dw n59
+   2061	1916  0000		      dw 0
+   2062	1918  3E 3D 30 42 52 41	4E+  n59: db '>=0BRANCH'
+   2063	      43 48
+   2064	1921  00		      db 0
+   2065	1922  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(2057) Segment alignment not strict enough
+   2066	1924			     c59:
+   2067	1924  B4 01		      mov ah,1
+   2068	1926  CD 21		      int 21h
+   2069	1928  B4 00		      mov ah,0
+   2070	192A  BD 0000e		      lea bp,_fillmem
+   2071	192D  FF D5		      call bp
+   2072	192F  05		      db b124-a124
+   2073	1930			     a124:
+   2074	1930  8B 07		      mov ax,[bx]
+   2075	1932  83 C3 02		      add bx,2
+   2076	1935			     b124:
+   2077	1935  8B D0		      mov dx,ax
+   2078	1937  03 C2		      add ax,dx
+   2079	1939  8B D0		      mov dx,ax
+   2080	193B  03 C2		      add ax,dx
+   2081	193D  8B D0		      mov dx,ax
+   2082	193F  03 C2		      add ax,dx
+   2083	1941  8B D0		      mov dx,ax
+   2084	1943  B8 1104r		      lea ax,[labels]
+   2085	1946  03 C2		      add ax,dx
+   2086	1948  8B F0		      mov si,ax
+   2087	194A  8B C7		      mov ax,di
+   2088	194C  89 04		      mov [si],ax
+   2089	194E  BD 0000e		      lea bp,_fillmem
+   2090	1951  FF D5		      call bp
+   2091	1953  05		      db b125-a125
+   2092	1954			     a125:
+   2093	1954  3D 0000		      cmp ax,0
+   2094	1957  7D 00		      jge ba
+   2095	1959			     ba:
+   2096	1959			     b125:
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 40
+mini4th.ASM
+
+
+
+   2097	1959  8B C6		      mov ax,si
+   2098	195B  BA 0004		      mov dx,4h
+   2099	195E  03 C2		      add ax,dx
+   2100	1960  8B F0		      mov si,ax
+   2101	1962  8B 04		      mov ax,[si]
+   2102	1964  3D 0000		      cmp ax,0
+   2103	1967  74 19		      je za
+   2104	1969  8B C8		      mov cx,ax
+   2105	196B  8B C6		      mov ax,si
+   2106	196D  BA 0004		      mov dx,4h
+   2107	1970  2B C2		      sub ax,dx
+   2108	1972  8B F0		      mov si,ax
+   2109	1974  8B 04		      mov ax,[si]
+   2110	1976  8B D1		      mov dx,cx
+   2111	1978  8B C8		      mov cx,ax
+   2112	197A  2B CE		      sub cx,si
+   2113	197C  83 E9 05		      sub cx,5
+   2114	197F  88 4C 04		      mov [byte	ptr si+4],cl
+   2115	1982			     za:
+   2116	1982  C3		      ret
+   2117	1983  90		      align 4
+*Warning* mini4th.ASM(2109) Segment alignment not strict enough
+   2118	1984			     levellambda:
+   2119	1984  04*(00)		      db 04h dup (0)
+   2120	1988			     adrblambda:
+   2121	1988  0400*(00)		      db 0400h dup (0)
+   2122				     align 4
+*Warning* mini4th.ASM(2114) Segment alignment not strict enough
+   2123	1D88  1904r		     w60: dw w59
+   2124	1D8A  0000		      dw 0
+   2125	1D8C  1DA4r		      dw c60
+   2126	1D8E  0000		      dw 0
+   2127	1D90  0000		      dw 0
+   2128	1D92  0000		      dw 0
+   2129	1D94  0000		      dw 0
+   2130	1D96  0000		      dw 0
+   2131	1D98  1D9Cr		      dw n60
+   2132	1D9A  0000		      dw 0
+   2133	1D9C  4C 41 4D 42 44 41	     n60: db 'LAMBDA'
+   2134	1DA2  00		      db 0
+   2135	1DA3  90		      align 4
+*Warning* mini4th.ASM(2127) Segment alignment not strict enough
+   2136	1DA4			     c60:
+   2137	1DA4  8B CF		      mov cx,di
+   2138	1DA6  B8 0000		      mov ax,00h
+   2139	1DA9  51		      push cx
+   2140	1DAA  B1 B8		      mov cl,0B8h
+   2141	1DAC  88 0D		      mov [di],cl
+   2142	1DAE  47		      inc di
+   2143	1DAF  88 05		      mov [di],al
+   2144	1DB1  47		      inc di
+   2145	1DB2  88 25		      mov[di],ah
+   2146	1DB4  47		      inc di
+   2147	1DB5  59		      pop cx
+   2148	1DB6  BD 0000e		      lea bp,_fillmem
+   2149	1DB9  FF D5		      call bp
+   2150	1DBB  08		      db b126-a126
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 41
+mini4th.ASM
+
+
+
+   2151	1DBC			     a126:
+   2152	1DBC  83 EB 02		      sub bx,2
+   2153	1DBF  89 07		      mov [bx],ax
+   2154	1DC1  B8 0000		      mov ax,00h
+   2155	1DC4			     b126:
+   2156	1DC4  BE 1988r		      lea si,[adrblambda]
+   2157	1DC7  8B C7		      mov ax,di
+   2158	1DC9  89 04		      mov [si],ax
+   2159	1DCB  BD 0000e		      lea bp,_fillmem
+   2160	1DCE  FF D5		      call bp
+   2161	1DD0  05		      db b127-a127
+   2162	1DD1			     a127:
+   2163	1DD1  3D 0000		      cmp ax,0
+   2164	1DD4  74 00		      je bla
+   2165	1DD6			     bla:
+   2166	1DD6			     b127:
+   2167	1DD6  8B C7		      mov ax,di
+   2168	1DD8  8B F9		      mov di,cx
+   2169	1DDA  51		      push cx
+   2170	1DDB  B1 B8		      mov cl,0B8h
+   2171	1DDD  88 0D		      mov [di],cl
+   2172	1DDF  47		      inc di
+   2173	1DE0  88 05		      mov [di],al
+   2174	1DE2  47		      inc di
+   2175	1DE3  88 25		      mov[di],ah
+   2176	1DE5  47		      inc di
+   2177	1DE6  59		      pop cx
+   2178	1DE7  BD 0000e		      lea bp,_fillmem
+   2179	1DEA  FF D5		      call bp
+   2180	1DEC  0D		      db b128-a128
+   2181	1DED			     a128:
+   2182	1DED  83 EB 02		      sub bx,2
+   2183	1DF0  89 07		      mov [bx],ax
+   2184	1DF2  B8 0000		      mov ax,00h
+   2185	1DF5  3D 0000		      cmp ax,0
+   2186	1DF8  74 00		      je blb
+   2187	1DFA			     blb:
+   2188	1DFA			     b128:
+   2189	1DFA  C3		      ret
+   2190	1DFB  90		     align 4
+*Warning* mini4th.ASM(2182) Segment alignment not strict enough
+   2191	1DFC  1D88r		     w61: dw w60
+   2192	1DFE  0000		      dw 0
+   2193	1E00  1E18r		      dw c61
+   2194	1E02  0000		      dw 0
+   2195	1E04  0000		      dw 0
+   2196	1E06  0000		      dw 0
+   2197	1E08  0000		      dw 0
+   2198	1E0A  0000		      dw 0
+   2199	1E0C  1E10r		      dw n61
+   2200	1E0E  0000		      dw 0
+   2201	1E10  3B 4C 41 4D 42 44	41   n61: db ';LAMBDA'
+   2202	1E17  00		      db 0
+   2203				      align 4
+*Warning* mini4th.ASM(2195) Segment alignment not strict enough
+   2204	1E18			     c61:
+   2205	1E18  BD 0000e		      lea bp,_fillmem
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 42
+mini4th.ASM
+
+
+
+   2206	1E1B  FF D5		      call bp
+   2207	1E1D  01		      db b129-a129
+   2208	1E1E			     a129:
+   2209	1E1E  C3		      ret
+   2210	1E1F			     b129:
+   2211	1E1F  BE 1988r		      lea si,[adrblambda]
+   2212	1E22  8B 34		      mov si,[si]
+   2213	1E24  8B C7		      mov ax,di
+   2214	1E26  8B C8		      mov cx,ax
+   2215	1E28  2B CE		      sub cx,si
+   2216	1E2A  83 E9 05		      sub cx,5
+   2217	1E2D  88 4C 04		      mov [byte	ptr si+4],cl
+   2218	1E30  C3		      ret
+   2219	1E31  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(2211) Segment alignment not strict enough
+   2220	1E34  1DFCr		     w62: dw w61
+   2221	1E36  0000		      dw 0
+   2222	1E38  1E50r		      dw c62
+   2223	1E3A  0000		      dw 0
+   2224	1E3C  0000		      dw 0
+   2225	1E3E  0000		      dw 0
+   2226	1E40  0000		      dw 0
+   2227	1E42  0000		      dw 0
+   2228	1E44  1E48r		      dw n62
+   2229	1E46  0000		      dw 0
+   2230	1E48  4C 4C 41 4D 42 44	41   n62: db 'LLAMBDA'
+   2231	1E4F  00		      db 0
+   2232				      align 4
+*Warning* mini4th.ASM(2224) Segment alignment not strict enough
+   2233	1E50			     c62:
+   2234	1E50  BE 1984r		      lea si,[levellambda]
+   2235	1E53  8B 04		      mov ax,[si]
+   2236	1E55  BA 0001		      mov dx,1h
+   2237	1E58  03 C2		      add ax,dx
+   2238	1E5A  89 04		      mov [si],ax
+   2239	1E5C  8B C8		      mov cx,ax
+   2240	1E5E  8B D7		      mov dx,di
+   2241	1E60  BD 0000e		      lea bp,_fillmem
+   2242	1E63  FF D5		      call bp
+   2243	1E65  08		      db b130-a130
+   2244	1E66			     a130:
+   2245	1E66  B8 0000		      mov ax,00h
+   2246	1E69  83 EB 02		      sub bx,2
+   2247	1E6C  89 07		      mov [bx],ax
+   2248	1E6E			     b130:
+   2249	1E6E  8B C1		      mov ax,cx
+   2250	1E70  8B D0		      mov dx,ax
+   2251	1E72  03 C2		      add ax,dx
+   2252	1E74  8B D0		      mov dx,ax
+   2253	1E76  03 C2		      add ax,dx
+   2254	1E78  8B D0		      mov dx,ax
+   2255	1E7A  B8 1988r		      lea ax,[adrblambda]
+   2256	1E7D  03 C2		      add ax,dx
+   2257	1E7F  8B F0		      mov si,ax
+   2258	1E81  8B C7		      mov ax,di
+   2259	1E83  89 04		      mov [si],ax
+   2260	1E85  BD 0000e		      lea bp,_fillmem
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 43
+mini4th.ASM
+
+
+
+   2261	1E88  FF D5		      call bp
+   2262	1E8A  08		      db b131-a131
+   2263	1E8B			     a131:
+   2264	1E8B  B8 0000		      mov ax,00h
+   2265	1E8E  3D 0000		      cmp ax,0
+   2266	1E91  7D 00		      jge bb
+   2267	1E93			     bb:
+   2268	1E93			     b131:
+   2269	1E93  8B C7		      mov ax,di
+   2270	1E95  8B FA		      mov di,dx
+   2271	1E97  8B D0		      mov dx,ax
+   2272	1E99  BD 0000e		      lea bp,_fillmem
+   2273	1E9C  FF D5		      call bp
+   2274	1E9E  0D		      db b132-a132
+   2275	1E9F			     a132:
+   2276	1E9F  51		      push cx
+   2277	1EA0  B1 B8		      mov cl,0B8h
+   2278	1EA2  88 0D		      mov [di],cl
+   2279	1EA4  47		      inc di
+   2280	1EA5  88 05		      mov [di],al
+   2281	1EA7  47		      inc di
+   2282	1EA8  88 25		      mov[di],ah
+   2283	1EAA  47		      inc di
+   2284	1EAB  59		      pop cx
+   2285	1EAC			     b132:
+   2286	1EAC  8B FA		      mov di,dx
+   2287	1EAE  BD 0000e		      lea bp,_fillmem
+   2288	1EB1  FF D5		      call bp
+   2289	1EB3  00		      db b133-a133
+   2290	1EB4			     a133:
+   2291	1EB4			     b133:
+   2292	1EB4  C3		      ret
+   2293	1EB5  01*(87 DB) 90	     align 4
+*Warning* mini4th.ASM(2285) Segment alignment not strict enough
+   2294	1EB8  1E34r		     w63: dw w62
+   2295	1EBA  0000		      dw 0
+   2296	1EBC  1ED8r		      dw c63
+   2297	1EBE  0000		      dw 0
+   2298	1EC0  0000		      dw 0
+   2299	1EC2  0000		      dw 0
+   2300	1EC4  0000		      dw 0
+   2301	1EC6  0000		      dw 0
+   2302	1EC8  1ECCr		      dw n63
+   2303	1ECA  0000		      dw 0
+   2304	1ECC  45 4E 44 4C 4C 41	4D+  n63: db 'ENDLLAMBDA'
+   2305	      42 44 41
+   2306	1ED6  00		      db 0
+   2307	1ED7  90		      align 4
+*Warning* mini4th.ASM(2298) Segment alignment not strict enough
+   2308	1ED8			     c63:
+   2309	1ED8  BD 0000e		      lea bp,_fillmem
+   2310	1EDB  FF D5		      call bp
+   2311	1EDD  01		      db b134-a134
+   2312	1EDE			     a134:
+   2313	1EDE  C3		      ret
+   2314	1EDF			     b134:
+   2315	1EDF  BE 1984r		      lea si,[levellambda]
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 44
+mini4th.ASM
+
+
+
+   2316	1EE2  8B 04		      mov ax,[si]
+   2317	1EE4  8B D0		      mov dx,ax
+   2318	1EE6  03 C2		      add ax,dx
+   2319	1EE8  8B D0		      mov dx,ax
+   2320	1EEA  03 C2		      add ax,dx
+   2321	1EEC  8B D0		      mov dx,ax
+   2322	1EEE  B8 1988r		      lea ax,[adrblambda]
+   2323	1EF1  03 C2		      add ax,dx
+   2324	1EF3  8B F0		      mov si,ax
+   2325	1EF5  8B 34		      mov si,[si]
+   2326	1EF7  8B C7		      mov ax,di
+   2327	1EF9  8B C8		      mov cx,ax
+   2328	1EFB  2B CE		      sub cx,si
+   2329	1EFD  83 E9 05		      sub cx,5
+   2330	1F00  88 4C 04		      mov [byte	ptr si+4],cl
+   2331	1F03  BE 1984r		      lea si,[levellambda]
+   2332	1F06  8B 04		      mov ax,[si]
+   2333	1F08  BA 0001		      mov dx,1h
+   2334	1F0B  2B C2		      sub ax,dx
+   2335	1F0D  89 04		      mov [si],ax
+   2336	1F0F  C3		      ret
+   2337				     align 4
+*Warning* mini4th.ASM(2328) Segment alignment not strict enough
+   2338	1F10  1EB8r		     w64: dw w63
+   2339	1F12  0000		      dw 0
+   2340	1F14  1F30r		      dw c64
+   2341	1F16  0000		      dw 0
+   2342	1F18  0000		      dw 0
+   2343	1F1A  0000		      dw 0
+   2344	1F1C  0000		      dw 0
+   2345	1F1E  0000		      dw 0
+   2346	1F20  1F24r		      dw n64
+   2347	1F22  0000		      dw 0
+   2348	1F24  44 55 4D 50 43 4F	44+  n64: db 'DUMPCODE'
+   2349	      45
+   2350	1F2C  00		      db 0
+   2351	1F2D  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(2341) Segment alignment not strict enough
+   2352	1F30			     c64:
+   2353	1F30  89 16 0016r	      mov [word	ptr sdx],dx
+   2354	1F34  89 0E 0018r	      mov [word	ptr scx],cx
+   2355	1F38  89 36 001Ar	      mov [word	ptr ssi],si
+   2356	1F3C  89 1E 001Cr	      mov [word	ptr sbx],bx
+   2357	1F40  89 3E 001Er	      mov [word	ptr sdi],di
+   2358	1F44  BD 0000e		      lea bp,_dmpcode
+   2359	1F47  FF D5		      call bp
+   2360	1F49  8B 16 0016r	      mov dx,[word ptr sdx]
+   2361	1F4D  8B 0E 0018r	      mov cx,[word ptr scx]
+   2362	1F51  8B 36 001Ar	      mov si,[word ptr ssi]
+   2363	1F55  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   2364	1F59  8B 3E 001Er	      mov di,[word ptr sdi]
+   2365	1F5D  C3		      ret
+   2366	1F5E  01*(87 DB)	     align 4
+*Warning* mini4th.ASM(2356) Segment alignment not strict enough
+   2367	1F60  1F10r		     w65: dw w64
+   2368	1F62  0000		      dw 0
+   2369	1F64  1F7Cr		      dw c65
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 45
+mini4th.ASM
+
+
+
+   2370	1F66  0000		      dw 0
+   2371	1F68  0000		      dw 0
+   2372	1F6A  0000		      dw 0
+   2373	1F6C  0000		      dw 0
+   2374	1F6E  0000		      dw 0
+   2375	1F70  1F74r		      dw n65
+   2376	1F72  0000		      dw 0
+   2377	1F74  42 49 47 4E 4F 50	     n65: db 'BIGNOP'
+   2378	1F7A  00		      db 0
+   2379	1F7B  90		      align 4
+*Warning* mini4th.ASM(2369) Segment alignment not strict enough
+   2380	1F7C			     c65:
+   2381	1F7C  BD 0000e		      lea bp,_fillmem
+   2382	1F7F  FF D5		      call bp
+   2383	1F81  20		      db b135-a135
+   2384	1F82			     a135:
+   2385	1F82  8B C0		      mov ax,ax
+   2386	1F84  8B C0		      mov ax,ax
+   2387	1F86  8B C0		      mov ax,ax
+   2388	1F88  8B C0		      mov ax,ax
+   2389	1F8A  8B C0		      mov ax,ax
+   2390	1F8C  8B C0		      mov ax,ax
+   2391	1F8E  8B C0		      mov ax,ax
+   2392	1F90  8B C0		      mov ax,ax
+   2393	1F92  8B C0		      mov ax,ax
+   2394	1F94  8B C0		      mov ax,ax
+   2395	1F96  8B C0		      mov ax,ax
+   2396	1F98  8B C0		      mov ax,ax
+   2397	1F9A  8B C0		      mov ax,ax
+   2398	1F9C  8B C0		      mov ax,ax
+   2399	1F9E  8B C0		      mov ax,ax
+   2400	1FA0  8B C0		      mov ax,ax
+   2401	1FA2			     b135:
+   2402	1FA2  C3		      ret
+   2403	1FA3  90		     align 4
+*Warning* mini4th.ASM(2393) Segment alignment not strict enough
+   2404	1FA4  1F60r		     w66: dw w65
+   2405	1FA6  0000		      dw 0
+   2406	1FA8  1FC4r		      dw c66
+   2407	1FAA  0000		      dw 0
+   2408	1FAC  0000		      dw 0
+   2409	1FAE  0000		      dw 0
+   2410	1FB0  0000		      dw 0
+   2411	1FB2  0000		      dw 0
+   2412	1FB4  1FB8r		      dw n66
+   2413	1FB6  0000		      dw 0
+   2414	1FB8  43 41 4C 4C 44 55	4D+  n66: db 'CALLDUMMY'
+   2415	      4D 59
+   2416	1FC1  00		      db 0
+   2417	1FC2  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(2406) Segment alignment not strict enough
+   2418	1FC4			     c66:
+   2419	1FC4  BD 0000e		      lea bp,_fillmem
+   2420	1FC7  FF D5		      call bp
+   2421	1FC9  00		      db b136-a136
+   2422	1FCA			     a136:
+   2423	1FCA			     b136:
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 46
+mini4th.ASM
+
+
+
+   2424	1FCA  C3		      ret
+   2425	1FCB  90		     align 4
+*Warning* mini4th.ASM(2414) Segment alignment not strict enough
+   2426	1FCC  1FA4r		     w67: dw w66
+   2427	1FCE  0000		      dw 0
+   2428	1FD0  1FECr		      dw c67
+   2429	1FD2  0000		      dw 0
+   2430	1FD4  0000		      dw 0
+   2431	1FD6  0000		      dw 0
+   2432	1FD8  0000		      dw 0
+   2433	1FDA  0000		      dw 0
+   2434	1FDC  1FE0r		      dw n67
+   2435	1FDE  0000		      dw 0
+   2436	1FE0  55 4E 44 45 46 49	4E+  n67: db 'UNDEFINED'
+   2437	      45 44
+   2438	1FE9  00		      db 0
+   2439	1FEA  01*(87 DB)	      align 4
+*Warning* mini4th.ASM(2427) Segment alignment not strict enough
+   2440	1FEC			     c67:
+   2441	1FEC  8B F2		      mov si,dx
+   2442	1FEE  8B 44 10		      mov ax,[si+010h]
+   2443	1FF1  50		      push ax
+   2444	1FF2  89 16 0016r	      mov [word	ptr sdx],dx
+   2445	1FF6  89 0E 0018r	      mov [word	ptr scx],cx
+   2446	1FFA  89 36 001Ar	      mov [word	ptr ssi],si
+   2447	1FFE  89 1E 001Cr	      mov [word	ptr sbx],bx
+   2448	2002  89 3E 001Er	      mov [word	ptr sdi],di
+   2449	2006  BD 0000e		      lea bp,_sscandec
+   2450	2009  FF D5		      call bp
+   2451	200B  8B 16 0016r	      mov dx,[word ptr sdx]
+   2452	200F  8B 0E 0018r	      mov cx,[word ptr scx]
+   2453	2013  8B 36 001Ar	      mov si,[word ptr ssi]
+   2454	2017  8B 1E 001Cr	      mov bx,[word ptr sbx]
+   2455	201B  8B 3E 001Er	      mov di,[word ptr sdi]
+   2456	201F  59		      pop cx
+   2457	2020  51		      push cx
+   2458	2021  B1 B8		      mov cl,0B8h
+   2459	2023  88 0D		      mov [di],cl
+   2460	2025  47		      inc di
+   2461	2026  88 05		      mov [di],al
+   2462	2028  47		      inc di
+   2463	2029  88 25		      mov[di],ah
+   2464	202B  47		      inc di
+   2465	202C  59		      pop cx
+   2466	202D  BD 0000e		      lea bp,_fillmem
+   2467	2030  FF D5		      call bp
+   2468	2032  05		      db b137-a137
+   2469	2033			     a137:
+   2470	2033  83 EB 02		      sub bx,2
+   2471	2036  89 07		      mov [bx],ax
+   2472	2038			     b137:
+   2473	2038  C3		      ret
+   2474	2039  01*(87 DB) 90	      align 4
+*Warning* mini4th.ASM(2462) Segment alignment not strict enough
+   2475	203C			     lw:
+   2476				     align 4
+*Warning* mini4th.ASM(2464) Segment alignment not strict enough
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 47
+mini4th.ASM
+
+
+
+   2477	203C  1FCCr		     w68: dw w67
+   2478	203E  0000		      dw 0
+   2479	2040  2054r		      dw c68
+   2480	2042  0000		      dw 0
+   2481	2044  0000		      dw 0
+   2482	2046  0000		      dw 0
+   2483	2048  0000		      dw 0
+   2484	204A  0000		      dw 0
+   2485	204C  2050r		      dw n68
+   2486	204E  0000		      dw 0
+   2487	2050  42 59 45		     n68: db 'BYE'
+   2488	2053  00		      db 0
+   2489				      align 4
+*Warning* mini4th.ASM(2477) Segment alignment not strict enough
+   2490	2054			     c68:
+   2491	2054  BD 0000e		      lea bp,_fillmem
+   2492	2057  FF D5		      call bp
+   2493	2059  05		      db b138-a138
+   2494	205A			     a138:
+   2495	205A  B8 0000		      mov ax,0
+   2496	205D  CD 21		      int 21h
+   2497	205F			     b138:
+   2498	205F  C3		      ret
+   2499	2060			     cod:
+   2500	2060  2000*(00)		      db 02000h	dup (0)
+   2501	4060			     stk:
+   2502	4060  1000*(00)		      db 01000h	dup (0)
+   2503	5060			     main endp
+   2504				     end start
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 48
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "09/29/10"
+??FILENAME			  Text	 "mini4th "
+??TIME				  Text	 "09:01:31"
+??VERSION			  Number 0300
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MINI4TH
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+A100				  Near	 DGROUP:0932
+A101				  Near	 DGROUP:0939
+A102				  Near	 DGROUP:0AE6
+A103				  Near	 DGROUP:0B63
+A104				  Near	 DGROUP:0BFA
+A105				  Near	 DGROUP:0C03
+A106				  Near	 DGROUP:0C2E
+A107				  Near	 DGROUP:0C80
+A108				  Near	 DGROUP:0C9B
+A109				  Near	 DGROUP:0CBC
+A110				  Near	 DGROUP:0CD9
+A111				  Near	 DGROUP:0D02
+A112				  Near	 DGROUP:0D86
+A113				  Near	 DGROUP:0DBA
+A114				  Near	 DGROUP:0E2C
+A115				  Near	 DGROUP:0E5E
+A116				  Near	 DGROUP:0E8E
+A117				  Near	 DGROUP:0EBE
+A118				  Near	 DGROUP:0F48
+A119				  Near	 DGROUP:0FC2
+A120				  Near	 DGROUP:0FEE
+A121				  Near	 DGROUP:1000
+A122				  Near	 DGROUP:108E
+A123				  Near	 DGROUP:10A0
+A124				  Near	 DGROUP:1930
+A125				  Near	 DGROUP:1954
+A126				  Near	 DGROUP:1DBC
+A127				  Near	 DGROUP:1DD1
+A128				  Near	 DGROUP:1DED
+A129				  Near	 DGROUP:1E1E
+A130				  Near	 DGROUP:1E66
+A131				  Near	 DGROUP:1E8B
+A132				  Near	 DGROUP:1E9F
+A133				  Near	 DGROUP:1EB4
+A134				  Near	 DGROUP:1EDE
+A135				  Near	 DGROUP:1F82
+A136				  Near	 DGROUP:1FCA
+A137				  Near	 DGROUP:2033
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 49
+Symbol Table
+
+
+
+A138				  Near	 DGROUP:205A
+A70				  Near	 DGROUP:024D
+A71				  Near	 DGROUP:0272
+A72				  Near	 DGROUP:029A
+A73				  Near	 DGROUP:02C2
+A74				  Near	 DGROUP:02EE
+A75				  Near	 DGROUP:031E
+A76				  Near	 DGROUP:034A
+A77				  Near	 DGROUP:0376
+A78				  Near	 DGROUP:03A6
+A79				  Near	 DGROUP:03D6
+A80				  Near	 DGROUP:042A
+A81				  Near	 DGROUP:04BC
+A82				  Near	 DGROUP:04E6
+A83				  Near	 DGROUP:050A
+A84				  Near	 DGROUP:053E
+A85				  Near	 DGROUP:0572
+A86				  Near	 DGROUP:05BA
+A87				  Near	 DGROUP:05F6
+A88				  Near	 DGROUP:062E
+A89				  Near	 DGROUP:065E
+A90				  Near	 DGROUP:068E
+A91				  Near	 DGROUP:06BE
+A92				  Near	 DGROUP:06EE
+A93				  Near	 DGROUP:0797
+A94				  Near	 DGROUP:07AD
+A95				  Near	 DGROUP:081C
+A96				  Near	 DGROUP:088B
+A97				  Near	 DGROUP:08B2
+A98				  Near	 DGROUP:08E9
+A99				  Near	 DGROUP:090A
+ABIF				  Near	 DGROUP:106C
+ABIFN				  Near	 DGROUP:0FCC
+ADRBLAMBDA			  Near	 DGROUP:1988
+ADRIM				  Near	 DGROUP:08C0
+B100				  Near	 DGROUP:0932
+B101				  Near	 DGROUP:093A
+B102				  Near	 DGROUP:0B22
+B103				  Near	 DGROUP:0B68
+B104				  Near	 DGROUP:0BFC
+B105				  Near	 DGROUP:0C08
+B106				  Near	 DGROUP:0C68
+B107				  Near	 DGROUP:0C84
+B108				  Near	 DGROUP:0CA4
+B109				  Near	 DGROUP:0CC2
+B110				  Near	 DGROUP:0CDF
+B111				  Near	 DGROUP:0D0D
+B112				  Near	 DGROUP:0D98
+B113				  Near	 DGROUP:0DCC
+B114				  Near	 DGROUP:0E31
+B115				  Near	 DGROUP:0E68
+B116				  Near	 DGROUP:0E9A
+B117				  Near	 DGROUP:0EC5
+B118				  Near	 DGROUP:0F4A
+B119				  Near	 DGROUP:0FCB
+B120				  Near	 DGROUP:0FF3
+B121				  Near	 DGROUP:1005
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 50
+Symbol Table
+
+
+
+B122				  Near	 DGROUP:1093
+B123				  Near	 DGROUP:10A5
+B124				  Near	 DGROUP:1935
+B125				  Near	 DGROUP:1959
+B126				  Near	 DGROUP:1DC4
+B127				  Near	 DGROUP:1DD6
+B128				  Near	 DGROUP:1DFA
+B129				  Near	 DGROUP:1E1F
+B130				  Near	 DGROUP:1E6E
+B131				  Near	 DGROUP:1E93
+B132				  Near	 DGROUP:1EAC
+B133				  Near	 DGROUP:1EB4
+B134				  Near	 DGROUP:1EDF
+B135				  Near	 DGROUP:1FA2
+B136				  Near	 DGROUP:1FCA
+B137				  Near	 DGROUP:2038
+B138				  Near	 DGROUP:205F
+B70				  Near	 DGROUP:0252
+B71				  Near	 DGROUP:0279
+B72				  Near	 DGROUP:02A1
+B73				  Near	 DGROUP:02CE
+B74				  Near	 DGROUP:02FC
+B75				  Near	 DGROUP:032A
+B76				  Near	 DGROUP:0356
+B77				  Near	 DGROUP:0381
+B78				  Near	 DGROUP:03B1
+B79				  Near	 DGROUP:040B
+B80				  Near	 DGROUP:045F
+B81				  Near	 DGROUP:04C1
+B82				  Near	 DGROUP:04EB
+B83				  Near	 DGROUP:0519
+B84				  Near	 DGROUP:0552
+B85				  Near	 DGROUP:0594
+B86				  Near	 DGROUP:05D3
+B87				  Near	 DGROUP:060F
+B88				  Near	 DGROUP:063F
+B89				  Near	 DGROUP:066F
+B90				  Near	 DGROUP:069F
+B91				  Near	 DGROUP:06CF
+B92				  Near	 DGROUP:06FA
+B93				  Near	 DGROUP:0799
+B94				  Near	 DGROUP:07AF
+B95				  Near	 DGROUP:081C
+B96				  Near	 DGROUP:088B
+B97				  Near	 DGROUP:08B3
+B98				  Near	 DGROUP:08E9
+B99				  Near	 DGROUP:090B
+BA				  Near	 DGROUP:1959
+BB				  Near	 DGROUP:1E93
+BEGINIM				  Near	 DGROUP:0920
+BLA				  Near	 DGROUP:1DD6
+BLB				  Near	 DGROUP:1DFA
+C1				  Near	 DGROUP:011C
+C10				  Near	 DGROUP:0318
+C11				  Near	 DGROUP:0344
+C12				  Near	 DGROUP:0370
+C13				  Near	 DGROUP:03A0
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 51
+Symbol Table
+
+
+
+C14				  Near	 DGROUP:03D0
+C15				  Near	 DGROUP:0424
+C16				  Near	 DGROUP:047C
+C17				  Near	 DGROUP:04E0
+C18				  Near	 DGROUP:0504
+C19				  Near	 DGROUP:0538
+C2				  Near	 DGROUP:0140
+C20				  Near	 DGROUP:056C
+C21				  Near	 DGROUP:05B4
+C22				  Near	 DGROUP:05F0
+C23				  Near	 DGROUP:0628
+C24				  Near	 DGROUP:0658
+C25				  Near	 DGROUP:0688
+C26				  Near	 DGROUP:06B8
+C27				  Near	 DGROUP:06E8
+C28				  Near	 DGROUP:0714
+C29				  Near	 DGROUP:0768
+C3				  Near	 DGROUP:0168
+C30				  Near	 DGROUP:0784
+C31				  Near	 DGROUP:07CC
+C32				  Near	 DGROUP:0844
+C33				  Near	 DGROUP:08AC
+C34				  Near	 DGROUP:08DC
+C35				  Near	 DGROUP:0904
+C36				  Near	 DGROUP:0960
+C37				  Near	 DGROUP:097C
+C38				  Near	 DGROUP:0998
+C39				  Near	 DGROUP:09BC
+C4				  Near	 DGROUP:01BC
+C40				  Near	 DGROUP:0AE0
+C41				  Near	 DGROUP:0B44
+C42				  Near	 DGROUP:0B8C
+C43				  Near	 DGROUP:0BE4
+C44				  Near	 DGROUP:0C28
+C45				  Near	 DGROUP:0CFC
+C46				  Near	 DGROUP:0D30
+C47				  Near	 DGROUP:0D80
+C48				  Near	 DGROUP:0DB4
+C49				  Near	 DGROUP:0DE8
+C5				  Near	 DGROUP:0238
+C50				  Near	 DGROUP:0E58
+C51				  Near	 DGROUP:0E88
+C52				  Near	 DGROUP:0EB8
+C53				  Near	 DGROUP:0EE4
+C54				  Near	 DGROUP:0F6C
+C55				  Near	 DGROUP:0FBC
+C56				  Near	 DGROUP:0FE8
+C57				  Near	 DGROUP:1068
+C58				  Near	 DGROUP:1088
+C59				  Near	 DGROUP:1924
+C6				  Near	 DGROUP:026C
+C60				  Near	 DGROUP:1DA4
+C61				  Near	 DGROUP:1E18
+C62				  Near	 DGROUP:1E50
+C63				  Near	 DGROUP:1ED8
+C64				  Near	 DGROUP:1F30
+C65				  Near	 DGROUP:1F7C
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 52
+Symbol Table
+
+
+
+C66				  Near	 DGROUP:1FC4
+C67				  Near	 DGROUP:1FEC
+C68				  Near	 DGROUP:2054
+C7				  Near	 DGROUP:0294
+C8				  Near	 DGROUP:02BC
+C9				  Near	 DGROUP:02E8
+CALDEF				  Near	 DGROUP:0784
+CALLDEF				  Near	 DGROUP:079A
+COD				  Near	 DGROUP:2060
+CODE_ICREATE			  Near	 DGROUP:0B8C
+DEFW				  Near	 DGROUP:07B0
+ENDIM				  Near	 DGROUP:0933
+EWRZ				  Near	 DGROUP:0E32
+EXECWORD			  Near	 DGROUP:00EE
+GETPARAM			  Near	 DGROUP:0B50
+GETRZ				  Near	 DGROUP:0BFD
+IMCOD				  Near	 DGROUP:09C8
+LABELS				  Near	 DGROUP:1104
+LEVELLAMBDA			  Near	 DGROUP:1984
+LIF				  Near	 DGROUP:10A5
+LIFP				  Near	 DGROUP:1005
+LMLA				  Near	 DGROUP:00A7
+LMLB				  Near	 DGROUP:00E6
+LOOPIF				  Near	 DGROUP:10A5
+LTHEN				  Near	 DGROUP:10F0
+LW				  Near	 DGROUP:203C
+MAIN				  Near	 DGROUP:0020
+MAINLOOP			  Near	 DGROUP:009A
+MODE				  Near	 DGROUP:0100
+N1				  Near	 DGROUP:0118
+N10				  Near	 DGROUP:0314
+N11				  Near	 DGROUP:0340
+N12				  Near	 DGROUP:036C
+N13				  Near	 DGROUP:0398
+N14				  Near	 DGROUP:03C8
+N15				  Near	 DGROUP:0420
+N16				  Near	 DGROUP:0474
+N17				  Near	 DGROUP:04D8
+N18				  Near	 DGROUP:0500
+N19				  Near	 DGROUP:0530
+N2				  Near	 DGROUP:0134
+N20				  Near	 DGROUP:0568
+N21				  Near	 DGROUP:05AC
+N22				  Near	 DGROUP:05E8
+N23				  Near	 DGROUP:0624
+N24				  Near	 DGROUP:0654
+N25				  Near	 DGROUP:0684
+N26				  Near	 DGROUP:06B4
+N27				  Near	 DGROUP:06E4
+N28				  Near	 DGROUP:0710
+N29				  Near	 DGROUP:0760
+N3				  Near	 DGROUP:015C
+N30				  Near	 DGROUP:077C
+N31				  Near	 DGROUP:07C8
+N32				  Near	 DGROUP:083C
+N33				  Near	 DGROUP:08A8
+N34				  Near	 DGROUP:08D8
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 53
+Symbol Table
+
+
+
+N35				  Near	 DGROUP:0900
+N36				  Near	 DGROUP:095C
+N37				  Near	 DGROUP:0978
+N38				  Near	 DGROUP:0994
+N39				  Near	 DGROUP:09B8
+N4				  Near	 DGROUP:01B4
+N40				  Near	 DGROUP:0ADC
+N41				  Near	 DGROUP:0B38
+N42				  Near	 DGROUP:0B80
+N43				  Near	 DGROUP:0BDC
+N44				  Near	 DGROUP:0C20
+N45				  Near	 DGROUP:0CF4
+N46				  Near	 DGROUP:0D24
+N47				  Near	 DGROUP:0D7C
+N48				  Near	 DGROUP:0DB0
+N49				  Near	 DGROUP:0DE4
+N5				  Near	 DGROUP:0230
+N50				  Near	 DGROUP:0E4C
+N51				  Near	 DGROUP:0E80
+N52				  Near	 DGROUP:0EB0
+N53				  Near	 DGROUP:0EDC
+N54				  Near	 DGROUP:0F60
+N55				  Near	 DGROUP:0FB4
+N56				  Near	 DGROUP:0FE4
+N57				  Near	 DGROUP:1060
+N58				  Near	 DGROUP:1084
+N59				  Near	 DGROUP:1918
+N6				  Near	 DGROUP:0268
+N60				  Near	 DGROUP:1D9C
+N61				  Near	 DGROUP:1E10
+N62				  Near	 DGROUP:1E48
+N63				  Near	 DGROUP:1ECC
+N64				  Near	 DGROUP:1F24
+N65				  Near	 DGROUP:1F74
+N66				  Near	 DGROUP:1FB8
+N67				  Near	 DGROUP:1FE0
+N68				  Near	 DGROUP:2050
+N7				  Near	 DGROUP:0290
+N8				  Near	 DGROUP:02B8
+N9				  Near	 DGROUP:02E4
+SAX				  Near	 DGROUP:0014
+SBX				  Near	 DGROUP:001C
+SCX				  Near	 DGROUP:0018
+SDI				  Near	 DGROUP:001E
+SDX				  Near	 DGROUP:0016
+SSI				  Near	 DGROUP:001A
+START				  Near	 DGROUP:0000
+STK				  Near	 DGROUP:4060
+SVRC				  Near	 DGROUP:091C
+W1				  Near	 DGROUP:0104
+W10				  Near	 DGROUP:0300
+W11				  Near	 DGROUP:032C
+W12				  Near	 DGROUP:0358
+W13				  Near	 DGROUP:0384
+W14				  Near	 DGROUP:03B4
+W15				  Near	 DGROUP:040C
+W16				  Near	 DGROUP:0460
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 54
+Symbol Table
+
+
+
+W17				  Near	 DGROUP:04C4
+W18				  Near	 DGROUP:04EC
+W19				  Near	 DGROUP:051C
+W2				  Near	 DGROUP:0120
+W20				  Near	 DGROUP:0554
+W21				  Near	 DGROUP:0598
+W22				  Near	 DGROUP:05D4
+W23				  Near	 DGROUP:0610
+W24				  Near	 DGROUP:0640
+W25				  Near	 DGROUP:0670
+W26				  Near	 DGROUP:06A0
+W27				  Near	 DGROUP:06D0
+W28				  Near	 DGROUP:06FC
+W29				  Near	 DGROUP:074C
+W3				  Near	 DGROUP:0148
+W30				  Near	 DGROUP:0768
+W31				  Near	 DGROUP:07B4
+W32				  Near	 DGROUP:0828
+W33				  Near	 DGROUP:0894
+W34				  Near	 DGROUP:08C4
+W35				  Near	 DGROUP:08EC
+W36				  Near	 DGROUP:0948
+W37				  Near	 DGROUP:0964
+W38				  Near	 DGROUP:0980
+W39				  Near	 DGROUP:09A4
+W4				  Near	 DGROUP:01A0
+W40				  Near	 DGROUP:0AC8
+W41				  Near	 DGROUP:0B24
+W42				  Near	 DGROUP:0B6C
+W43				  Near	 DGROUP:0BC8
+W44				  Near	 DGROUP:0C0C
+W45				  Near	 DGROUP:0CE0
+W46				  Near	 DGROUP:0D10
+W47				  Near	 DGROUP:0D68
+W48				  Near	 DGROUP:0D9C
+W49				  Near	 DGROUP:0DD0
+W5				  Near	 DGROUP:021C
+W50				  Near	 DGROUP:0E38
+W51				  Near	 DGROUP:0E6C
+W52				  Near	 DGROUP:0E9C
+W53				  Near	 DGROUP:0EC8
+W54				  Near	 DGROUP:0F4C
+W55				  Near	 DGROUP:0FA0
+W56				  Near	 DGROUP:0FD0
+W57				  Near	 DGROUP:104C
+W58				  Near	 DGROUP:1070
+W59				  Near	 DGROUP:1904
+W6				  Near	 DGROUP:0254
+W60				  Near	 DGROUP:1D88
+W61				  Near	 DGROUP:1DFC
+W62				  Near	 DGROUP:1E34
+W63				  Near	 DGROUP:1EB8
+W64				  Near	 DGROUP:1F10
+W65				  Near	 DGROUP:1F60
+W66				  Near	 DGROUP:1FA4
+W67				  Near	 DGROUP:1FCC
+W68				  Near	 DGROUP:203C
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 55
+Symbol Table
+
+
+
+W7				  Near	 DGROUP:027C
+W8				  Near	 DGROUP:02A4
+W9				  Near	 DGROUP:02D0
+WTHEN				  Near	 DGROUP:104C
+ZA				  Near	 DGROUP:1982
+_DMPCODE			  Word	 ----:---- Extern
+_FILLMEM			  Word	 ----:---- Extern
+_F_FCLOSE			  Word	 ----:---- Extern
+_F_FGETC			  Word	 ----:---- Extern
+_F_FOPEN			  Word	 ----:---- Extern
+_F_FPUTC			  Word	 ----:---- Extern
+_GETSVA				  Word	 ----:---- Extern
+_GETWORD			  Word	 ----:---- Extern
+_INITCVM			  Word	 ----:---- Extern
+_PRINTDEC			  Word	 ----:---- Extern
+_PRINTHEX			  Word	 ----:---- Extern
+_SCANHEX			  Word	 ----:---- Extern
+_SSCANDEC			  Word	 ----:---- Extern
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  7000 Para	  Stack	  STACK
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  5060 Word	  Public  CODE
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 56
+Error Summary
+
+
+
+*Warning* mini4th.ASM(109) Segment alignment not strict	enough
+*Warning* mini4th.ASM(112) Segment alignment not strict	enough
+*Warning* mini4th.ASM(125) Segment alignment not strict	enough
+*Warning* mini4th.ASM(128) Segment alignment not strict	enough
+*Warning* mini4th.ASM(141) Segment alignment not strict	enough
+*Warning* mini4th.ASM(146) Segment alignment not strict	enough
+*Warning* mini4th.ASM(159) Segment alignment not strict	enough
+*Warning* mini4th.ASM(178) Segment alignment not strict	enough
+*Warning* mini4th.ASM(191) Segment alignment not strict	enough
+*Warning* mini4th.ASM(221) Segment alignment not strict	enough
+*Warning* mini4th.ASM(234) Segment alignment not strict	enough
+*Warning* mini4th.ASM(254) Segment alignment not strict	enough
+*Warning* mini4th.ASM(267) Segment alignment not strict	enough
+*Warning* mini4th.ASM(278) Segment alignment not strict	enough
+*Warning* mini4th.ASM(291) Segment alignment not strict	enough
+*Warning* mini4th.ASM(302) Segment alignment not strict	enough
+*Warning* mini4th.ASM(315) Segment alignment not strict	enough
+*Warning* mini4th.ASM(328) Segment alignment not strict	enough
+*Warning* mini4th.ASM(341) Segment alignment not strict	enough
+*Warning* mini4th.ASM(355) Segment alignment not strict	enough
+*Warning* mini4th.ASM(368) Segment alignment not strict	enough
+*Warning* mini4th.ASM(381) Segment alignment not strict	enough
+*Warning* mini4th.ASM(394) Segment alignment not strict	enough
+*Warning* mini4th.ASM(407) Segment alignment not strict	enough
+*Warning* mini4th.ASM(420) Segment alignment not strict	enough
+*Warning* mini4th.ASM(433) Segment alignment not strict	enough
+*Warning* mini4th.ASM(446) Segment alignment not strict	enough
+*Warning* mini4th.ASM(459) Segment alignment not strict	enough
+*Warning* mini4th.ASM(472) Segment alignment not strict	enough
+*Warning* mini4th.ASM(497) Segment alignment not strict	enough
+*Warning* mini4th.ASM(510) Segment alignment not strict	enough
+*Warning* mini4th.ASM(535) Segment alignment not strict	enough
+*Warning* mini4th.ASM(548) Segment alignment not strict	enough
+*Warning* mini4th.ASM(579) Segment alignment not strict	enough
+*Warning* mini4th.ASM(592) Segment alignment not strict	enough
+*Warning* mini4th.ASM(602) Segment alignment not strict	enough
+*Warning* mini4th.ASM(615) Segment alignment not strict	enough
+*Warning* mini4th.ASM(629) Segment alignment not strict	enough
+*Warning* mini4th.ASM(642) Segment alignment not strict	enough
+*Warning* mini4th.ASM(658) Segment alignment not strict	enough
+*Warning* mini4th.ASM(671) Segment alignment not strict	enough
+*Warning* mini4th.ASM(693) Segment alignment not strict	enough
+*Warning* mini4th.ASM(706) Segment alignment not strict	enough
+*Warning* mini4th.ASM(724) Segment alignment not strict	enough
+*Warning* mini4th.ASM(737) Segment alignment not strict	enough
+*Warning* mini4th.ASM(755) Segment alignment not strict	enough
+*Warning* mini4th.ASM(768) Segment alignment not strict	enough
+*Warning* mini4th.ASM(783) Segment alignment not strict	enough
+*Warning* mini4th.ASM(796) Segment alignment not strict	enough
+*Warning* mini4th.ASM(811) Segment alignment not strict	enough
+*Warning* mini4th.ASM(824) Segment alignment not strict	enough
+*Warning* mini4th.ASM(839) Segment alignment not strict	enough
+*Warning* mini4th.ASM(852) Segment alignment not strict	enough
+*Warning* mini4th.ASM(867) Segment alignment not strict	enough
+*Warning* mini4th.ASM(880) Segment alignment not strict	enough
+*Warning* mini4th.ASM(893) Segment alignment not strict	enough
+*Warning* mini4th.ASM(906) Segment alignment not strict	enough
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 57
+Error Summary
+
+
+
+*Warning* mini4th.ASM(925) Segment alignment not strict	enough
+*Warning* mini4th.ASM(938) Segment alignment not strict	enough
+*Warning* mini4th.ASM(940) Segment alignment not strict	enough
+*Warning* mini4th.ASM(953) Segment alignment not strict	enough
+*Warning* mini4th.ASM(991) Segment alignment not strict	enough
+*Warning* mini4th.ASM(1004) Segment alignment not strict enough
+*Warning* mini4th.ASM(1039) Segment alignment not strict enough
+*Warning* mini4th.ASM(1052) Segment alignment not strict enough
+*Warning* mini4th.ASM(1083) Segment alignment not strict enough
+*Warning* mini4th.ASM(1096) Segment alignment not strict enough
+*Warning* mini4th.ASM(1109) Segment alignment not strict enough
+*Warning* mini4th.ASM(1112) Segment alignment not strict enough
+*Warning* mini4th.ASM(1125) Segment alignment not strict enough
+*Warning* mini4th.ASM(1136) Segment alignment not strict enough
+*Warning* mini4th.ASM(1149) Segment alignment not strict enough
+*Warning* mini4th.ASM(1164) Segment alignment not strict enough
+*Warning* mini4th.ASM(1191) Segment alignment not strict enough
+*Warning* mini4th.ASM(1204) Segment alignment not strict enough
+*Warning* mini4th.ASM(1208) Segment alignment not strict enough
+*Warning* mini4th.ASM(1221) Segment alignment not strict enough
+*Warning* mini4th.ASM(1225) Segment alignment not strict enough
+*Warning* mini4th.ASM(1238) Segment alignment not strict enough
+*Warning* mini4th.ASM(1245) Segment alignment not strict enough
+*Warning* mini4th.ASM(1258) Segment alignment not strict enough
+*Warning* mini4th.ASM(1265) Segment alignment not strict enough
+*Warning* mini4th.ASM(1268) Segment alignment not strict enough
+*Warning* mini4th.ASM(1281) Segment alignment not strict enough
+*Warning* mini4th.ASM(1307) Segment alignment not strict enough
+*Warning* mini4th.ASM(1320) Segment alignment not strict enough
+*Warning* mini4th.ASM(1345) Segment alignment not strict enough
+*Warning* mini4th.ASM(1358) Segment alignment not strict enough
+*Warning* mini4th.ASM(1379) Segment alignment not strict enough
+*Warning* mini4th.ASM(1392) Segment alignment not strict enough
+*Warning* mini4th.ASM(1420) Segment alignment not strict enough
+*Warning* mini4th.ASM(1433) Segment alignment not strict enough
+*Warning* mini4th.ASM(1534) Segment alignment not strict enough
+*Warning* mini4th.ASM(1547) Segment alignment not strict enough
+*Warning* mini4th.ASM(1560) Segment alignment not strict enough
+*Warning* mini4th.ASM(1573) Segment alignment not strict enough
+*Warning* mini4th.ASM(1592) Segment alignment not strict enough
+*Warning* mini4th.ASM(1605) Segment alignment not strict enough
+*Warning* mini4th.ASM(1621) Segment alignment not strict enough
+*Warning* mini4th.ASM(1634) Segment alignment not strict enough
+*Warning* mini4th.ASM(1650) Segment alignment not strict enough
+*Warning* mini4th.ASM(1661) Missing end	quote
+*Warning* mini4th.ASM(1663) Segment alignment not strict enough
+*Warning* mini4th.ASM(1700) Segment alignment not strict enough
+*Warning* mini4th.ASM(1713) Segment alignment not strict enough
+*Warning* mini4th.ASM(1725) Segment alignment not strict enough
+*Warning* mini4th.ASM(1738) Segment alignment not strict enough
+*Warning* mini4th.ASM(1751) Segment alignment not strict enough
+*Warning* mini4th.ASM(1764) Segment alignment not strict enough
+*Warning* mini4th.ASM(1775) Segment alignment not strict enough
+*Warning* mini4th.ASM(1788) Segment alignment not strict enough
+*Warning* mini4th.ASM(1840) Segment alignment not strict enough
+*Warning* mini4th.ASM(1853) Segment alignment not strict enough
+*Warning* mini4th.ASM(1870) Segment alignment not strict enough
+Turbo Assembler	 Version 3.0	    09/29/10 09:01:33	    Page 58
+Error Summary
+
+
+
+*Warning* mini4th.ASM(1883) Segment alignment not strict enough
+*Warning* mini4th.ASM(1895) Segment alignment not strict enough
+*Warning* mini4th.ASM(1898) Segment alignment not strict enough
+*Warning* mini4th.ASM(1911) Segment alignment not strict enough
+*Warning* mini4th.ASM(1953) Segment alignment not strict enough
+*Warning* mini4th.ASM(1955) Segment alignment not strict enough
+*Warning* mini4th.ASM(1968) Segment alignment not strict enough
+*Warning* mini4th.ASM(1971) Segment alignment not strict enough
+*Warning* mini4th.ASM(1974) Segment alignment not strict enough
+*Warning* mini4th.ASM(1987) Segment alignment not strict enough
+*Warning* mini4th.ASM(2041) Segment alignment not strict enough
+*Warning* mini4th.ASM(2044) Segment alignment not strict enough
+*Warning* mini4th.ASM(2057) Segment alignment not strict enough
+*Warning* mini4th.ASM(2109) Segment alignment not strict enough
+*Warning* mini4th.ASM(2114) Segment alignment not strict enough
+*Warning* mini4th.ASM(2127) Segment alignment not strict enough
+*Warning* mini4th.ASM(2182) Segment alignment not strict enough
+*Warning* mini4th.ASM(2195) Segment alignment not strict enough
+*Warning* mini4th.ASM(2211) Segment alignment not strict enough
+*Warning* mini4th.ASM(2224) Segment alignment not strict enough
+*Warning* mini4th.ASM(2285) Segment alignment not strict enough
+*Warning* mini4th.ASM(2298) Segment alignment not strict enough
+*Warning* mini4th.ASM(2328) Segment alignment not strict enough
+*Warning* mini4th.ASM(2341) Segment alignment not strict enough
+*Warning* mini4th.ASM(2356) Segment alignment not strict enough
+*Warning* mini4th.ASM(2369) Segment alignment not strict enough
+*Warning* mini4th.ASM(2393) Segment alignment not strict enough
+*Warning* mini4th.ASM(2406) Segment alignment not strict enough
+*Warning* mini4th.ASM(2414) Segment alignment not strict enough
+*Warning* mini4th.ASM(2427) Segment alignment not strict enough
+*Warning* mini4th.ASM(2462) Segment alignment not strict enough
+*Warning* mini4th.ASM(2464) Segment alignment not strict enough
+*Warning* mini4th.ASM(2477) Segment alignment not strict enough
+

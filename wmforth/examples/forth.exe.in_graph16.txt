@@ -1,0 +1,125 @@
+
+: trace PRINT ;
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+CARGS message : trace
+ # 0 L" trace" message # 0 CALL MessageBox 4 DROP 
+ END ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOT
+# 0 variable i
+CREATE ps # C ALLOT
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+CREATE msg # 7 ALLOT
+
+: allot-buf # 100 ALLOT ;
+CREATE buf allot-buf ; 
+
+: top
+L" top" trace
+BEGIN
+ L" loop" trace
+ # 1
+WHILE
+ L" apres WHILE" trace
+ buf OUTUSTRING
+ # 0 INPUT 
+ DUP trace
+ DOUSTRING L" ;;" # 6 MAINLOOP
+ # 0 PRINTCHAR
+ OUTSTD
+ buf trace
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+ L" avant REPEAT" trace
+REPEAT
+L" apres REPEAT" trace
+;
+
+CARGS hwnd message wparam lparam : paint
+   " paint" TRACE
+   ps hwnd CALL BeginPaint 2 hdc !
+   # 40C080 CALL CreateSolidBrush 1 brush !
+   brush @ hdc @ CALL SelectObject 2 DROP
+   # 302010 # 5 # 0 CALL CreatePen 3 pen !
+   pen @ hdc @ CALL SelectObject 2 DROP
+   # 5C # 12C # 28 # E6 hdc @ RECTANGLE DROP
+   ps hwnd CALL EndPaint 2 DROP       
+;
+
+MACRO: paintproc
+ PUSH F paint ; 
+
+' paintproc # 4 + SETPAINTPROC
+
+RAWCODE: paintasm
+ ASM{
+ RC = RD
+ PUSH RD 0001
+ PUSH RD 5030
+ RD = RD - 54
+ R5 = R0
+ R1 = RD + 14
+ BeginPaint ()
+ R4 = R0
+ R1 = RD + 4
+ R0 = R5
+ GetClientRect ()
+ R0 = [1FB28]
+ CreateSolidBrush ()
+ R1 = R0
+ R0 = R4
+ SelectObject ()
+ R2 = [1FB24]
+ R1 = 5
+ R0 = 0
+ CreatePen ()
+ R1 = R0
+ R0 = R4
+ SelectObject ()
+ R3 = 5A
+ [RD+0] = R3
+ R2 = 28
+ R3 = [1FB30]
+ R1 = E6
+ R0 = R4
+ Rectangle ()
+ R1 = RD + 14
+ R0 = R5
+ EndPaint ()
+ RD = RD + 54
+ RR#A030 = [RD+]
+1FB24: 00302010 
+1FB28: 0040C080 
+1FB2C: E92D4000  
+1FB30: 0000012C
+1FB34: 00000000
+} ;RAWCODE
+
+REM ///
+' paintasm # 4 + SETPAINTPROC
+///
+
+top
+
+
+
+
+  
+
+ 

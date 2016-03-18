@@ -1,0 +1,72 @@
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: printstr
+ BEGIN
+  DUP C@
+ WHILE
+  DUP C@ CALL writecarac 1 DROP
+  # 1 +
+ REPEAT
+ DROP ;
+
+: printeol 
+ # A CALL writecarac 1 DROP ;
+
+: printeol2
+ " end of
+line" printstr ;
+
+: PH
+ CALL getreadword 0 ;
+
+CREATE bufasm # 40 ALLOT
+
+: dasminstr
+ bufasm CALL printasm 3 DROP ;
+
+: dasm1
+  DUP @ DUP PRINT dasminstr 
+  bufasm printstr
+  printeol  
+ ;
+
+: dasm1b
+ @ PRINT 
+ printeol ;
+
+: dasm
+ BEGIN
+  DUP 
+ WHILE
+  SWAP DUP DUP PRINT dasm1
+  # 4 +
+  SWAP
+  # 1 -
+ REPEAT  ;
+
+: testdasm 
+PH + # 4 + @ # 40 dasm ;
+
+" Test" printstr
+printeol
+PH + PRINT
+PH + # 4 + @ PRINT
+PH + # 4 + @ dasm1
+# 111 PRINT
+PH + # 4 + @ dasm1
+# 222 PRINT
+printeol
+PH + # 4 + @ # 40 dasm 
+
+# FFF PRINT
+
+
+
+
+
+
+
+ 
+

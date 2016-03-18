@@ -1,0 +1,40 @@
+
+: trace PRINT ;
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+CREATE buf # 1000 ALLOT 
+
+# A1 PRINT
+
+: test3
+L" Bonjour" # 0 # C HEDIT1 CALL SendMessage 4 DROP
+# 0 INPUT PRINTUSTRING
+;
+
+: test4
+L" Bonjour" # 0 # C HEDIT1 CALL SendMessage 4 DROP
+BEGIN
+ # 1
+WHILE
+ buf OUTUSTRING
+ # 0 INPUT 
+ DUP # 0 SWAP L" entree" SWAP # 0 CALL MessageBox 4 DROP
+ DOUSTRING
+ # 0 PRINTCHAR
+ OUTSTD
+ # 0 L" resultat" buf # 0 CALL MessageBox 4 DROP
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+REPEAT
+;
+
+test4
+
+# FFF trace
+
+
+  
+
+ 

@@ -1,0 +1,30 @@
+
+: trace PRINT ;
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: allot-buf # 100 ALLOT ;
+CREATE buf allot-buf ; 
+
+: top
+BEGIN
+ # 1
+WHILE
+ buf OUTUSTRING
+ # 0 INPUT 
+ DOUSTRING L" ;;" # 0 MAINLOOP
+ # 0 PRINTCHAR
+ OUTSTD
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+REPEAT
+;
+
+top
+
+
+
+  
+
+ 

@@ -1,0 +1,168 @@
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+CARGS message : trace1
+ # 0 L" trace" message # 0 CALL MessageBox 4 DROP 
+ END ;
+
+: trace DROP ;
+
+: nop ;
+
+: coredll 
+ L" coredll.dll" CALL GetModuleHandle 1 ;
+
+: ticadr
+ L" GetTickCount" coredll CALL GetProcAddress 2 ;
+
+: tik
+ CM coredll.dll GetTickCount 0 ;
+
+# A array wc
+# 0 variable hw
+
+MACRO: wndproc
+
+;
+
+: regmyclass
+ # 3 # 0 wc !
+ ' wndproc # 4 + @ # 1 wc !
+ # 0 # 2 wc !
+ # 0 # 3 wc !
+ INSTANCE # 4 wc !
+ # 0 # 5 wc !
+ # 0 # 6 wc !
+ # 0 # 7 wc !
+ # 0 # 8 wc !
+ L" mywndclass" # 9 wc !
+ # 0 wc CALL RegisterClass 1 PRINT
+;
+
+# B array mywnd
+
+: cremywnd
+# C1 PRINT
+L" mywndclass" # 0 mywnd !
+# C11 PRINT
+L" My window" # 1 mywnd !
+# C12 PRINT
+EXTVAL WS_VISIBLE 
+EXTVAL WS_BORDER |  
+# 2 mywnd !
+# C13 PRINT
+# 10 # 3 mywnd !
+# C14 PRINT
+# 50 # 4 mywnd !
+# C15 PRINT
+# 200 # 5 mywnd !
+# C16 PRINT
+# 150 # 6 mywnd !
+# C17 PRINT
+( EXTVAL &ghWnd @ # 7 mywnd ! )
+# 0 # 7 mywnd !
+# C18 PRINT
+# 0 # 8 mywnd !
+# C19 PRINT
+INSTANCE # 9 mywnd !
+# C1A PRINT
+# 0 # 10 mywnd !
+# C2 PRINT
+# 0 mywnd CREATEWINDOW hw ! 
+# C3 PRINT
+hw @ PRINT
+# C4 PRINT
+CALL GetLastError 0 .
+# C5 PRINT
+;
+
+: initinstance
+# A1 PRINT
+regmyclass
+# A2 PRINT
+cremywnd
+# A3 PRINT
+EXTVAL &gnCmdShow @ hw @ CALL ShowWindow 2 PRINT
+# A4 PRINT
+hw @ CALL UpdateWindow 1 PRINT
+# A5 PRINT
+;
+
+CREATE msg # 7 ALLOT
+
+: testwin
+ initinstance
+ BEGIN
+  # 0 # 0 # 0 msg CALL GetMessage 4
+ WHILE
+  msg CALL TranslateMessage 1 DROP
+  msg CALL DispatchMessage 1 DROP
+ REPEAT
+;
+
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOT
+# 0 variable i
+CREATE ps # C ALLOT
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+CREATE msg # 7 ALLOT
+
+CARGS n : testloop
+ # 0 i !
+ BEGIN
+  i @ n <
+ WHILE
+  i @ # 1 + i !
+ REPEAT 
+ END ;
+
+: allot-buf # 100 ALLOT ;
+CREATE buf allot-buf ; 
+
+: top
+L" top" trace
+BEGIN
+ L" loop" trace
+ # 1
+WHILE
+ L" apres WHILE" trace
+ buf OUTUSTRING
+ # 0 INPUT 
+ DUP trace
+ DOUSTRING L" ;;" # 6 MAINLOOP
+ # 0 PRINTCHAR
+ OUTSTD
+ buf trace
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+ L" avant REPEAT" trace
+REPEAT
+L" apres REPEAT" trace
+;
+
+: hello
+ # 0 L" Message" L" Welcome to Forth" # 0
+ CALL MessageBox 4 DROP ;
+
+testwin
+
+
+
+
+
+
+  
+
+ 

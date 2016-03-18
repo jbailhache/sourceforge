@@ -1,0 +1,11 @@
+# 111 PRINT
+
+# 12 # 12 = PRINT
+# 12 # 34 = PRINT
+
+CREATE x # 3 ALLOT
+
+x PRINT
+
+# FFF PRINT
+

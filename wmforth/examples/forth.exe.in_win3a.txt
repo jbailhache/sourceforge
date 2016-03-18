@@ -1,0 +1,140 @@
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOT
+# 0 variable i
+CREATE ps # C ALLOT
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+
+CARGS lParam wParam message hWnd : WndProc1
+ message # 111 = IF
+  lParam hButton1 @ = IF
+   buf # 400 # D hEdit1 @ CALL SendMessage 4 DROP
+   # 0 i !
+   DO buf i @ # 2 * + H@ WHILE
+    buf i @ # 2 * + H@ # 1 + buf i @ # 2 * + H!
+    i @ # 1 + i !
+   REPEAT    
+   buf # 0 # C hEdit1 @ CALL SendMessage 4 DROP
+  ELSE
+
+   lParam wParam message hWnd CALL DefWindowProc 4 DROP
+  THEN  
+
+ ELSE
+  message # F = IF
+   ps hWnd @ CALL BeginPaint 2 hdc !
+   # 40C080 CALL CreateSolidBrush 1 brush !
+   brush @ hdc @ CALL SelectObject 2 DROP
+   # 302010 # 5 # 0 CALL CreatePen 3 pen !
+   pen @ hdc @ CALL SelectObject 2 DROP
+   # 5C # 12C # 28 # E6 hdc @ CALL Rectangle DROP
+   ps hWnd @ CALL EndPaint 2 DROP       
+  ELSE
+   message # 2 = IF
+    # 0 CALL PostQuitMessage 1 DROP
+   ELSE
+    lParam wParam message hWnd CALL DefWindowProc 4 DROP
+   THEN
+  THEN
+ THEN
+POP 1 END PUSH 1 ;
+
+MACRO: WndProc
+ PUSH F
+ WndProc1
+ POP 1
+;
+
+: ClassName L" TestWin" ;
+
+# 80000000 constant CW_USEDEFAULT
+
+: RegisterMyClass
+# 3 # 0 wc !
+' WndProc # 4 + # 1 wc !
+# 0 # 2 wc !
+# 0 # 3 wc !
+INSTANCE # 4 wc !
+# 0 # 5 wc !
+# 0 # 6 wc !
+# 0 CALL GetStockObject 1 # 7 wc !
+# 0 # 8 wc !
+ClassName # 9 wc !
+# 0 wc CALL RegisterClass 1 DROP ;
+
+: InitInstance
+ RegisterMyClass
+
+ ClassName # 0 wp !
+ L" Titre" # 1 wp !
+ # 10000000 # 2 wp !
+ CW_USEDEFAUKT # 3 wp !
+ CW_USEDEFAUKT # 4 wp !
+ CW_USEDEFAUKT # 5 wp !
+ CW_USEDEFAUKT # 6 wp !
+ # 0 # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hWnd !
+
+ L" EDIT" # 0 wp !
+ L" " # 1 wp !
+ # D0B010C4 # 2 wp !
+ # 14 # 3 wp !
+ # 28 # 4 wp !
+ # C8 # 5 wp !
+ # 3C # 6 wp !
+ hWnd @ # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hEdit1 !
+
+ L" BUTTON" # 0 wp !
+ L" " # 1 wp !
+ # 50800000 # 2 wp !
+ # 14 # 3 wp !
+ # 8C # 4 wp !
+ # 32 # 5 wp !
+ # 14 # 6 wp !
+ hWnd @ # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hButton1 !
+
+ CMDSHOW hWnd @ CALL ShowWindow 2 DROP
+ hWnd @ CALL UpdateWindow 1
+;
+
+: TestWin
+ InitInstance
+ BEGIN
+  # 0 # 0 # 0 msg CALL GetMessage 4
+ WHILE
+  msg CALL TranslateMessage 1 DROP
+  msg CALL DispatchMessage 1 DROP
+ REPEAT
+;
+
+
+
+  
+
+ 

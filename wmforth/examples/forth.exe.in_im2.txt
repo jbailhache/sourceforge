@@ -1,0 +1,16 @@
+: +I COMPILE + ; IMMEDIATE
+: TEST+I # 4 # 6 +I PRINT ;
+TEST+I # A PRINT 
+
+: LITERAL
+ # E59F0000 ,
+ # EA000000 , ,
+ # E92B0001 ,
+ PUTCODE E1A00002
+; IMMEDIATE 
+
+: testlit [ # 1234 ] LITERAL  ;
+
+testlit PRINT
+
+# FFF PRINT

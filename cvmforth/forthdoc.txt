@@ -1,0 +1,43 @@
+CVM-Forth is a Forth compiler for the Compiled Virtual Machine CVM.
+
+Actually only a subset of the Forth programming language is implemented in CVM-Forth.
+
+Here are the Forth words actually implemented :
+
+Arithmetic 		+ -
+Logic 			AND XOR ASR (arithmetic shift right)
+Stack manipulation 	DROP DUP SWAP ROT OVER TUCK
+Memory access 		@ ! C@ C! ALLOT
+Input output 		KEY EMIT .
+Words definition 	: ; IMMEDIATE CREATE DOES>
+Control 		IF ELSE THEN BEGIN WHILE REPEAT
+Strings			Z" ..." or ZSTRING "..." (zero-terminated string) 
+			ZU" ..." or ZUSTRING "..." (zero-terminated unicode string)
+Miscellaneous		HERE [ ] ' 
+
+
+The following extensions are also defined :
+
+HEX. 		prints a number in hexadecimal
+HEXLIT xxxx 	pushes hexadecimal number xxxx on the stack
+MACRO: 		begins the definition of a macro
+LAMBDA ;LAMBDA	anonymous definition
+
+and for Windows Dev-C++ and Windows Mobile version only :
+CALLAPIn 	call Windows API function with n arguments (n = 0 to 4)
+
+Example :
+        
+Windows:
+: hello
+ 0 Z" Hello World !" Z" Message" 0
+ Z" User32.dll" Z" MessageBoxA" CALLAPI4 ;
+        
+Windows Mobile:
+: hello
+ 0 ZU" Hello World !" ZU" Message" 0
+ ZU" coredll.dll" ZU" MessageBoxW" CALLAPI4 ;
+
+
+
+

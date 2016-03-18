@@ -1,0 +1,41 @@
+# A1 PRINT
+: testdoastring
+" # B1 PRINT" DOASTRING ;
+
+# A2 PRINT
+: testdoustring
+" # B2 PRINT" DOUSTRING ;
+
+# A3 PRINT
+CREATE buf # 100 ALLOT
+
+# A4 PRINT
+: testoutastring
+buf OUTASTRING
+# B4 PRINT
+# 0 PRINTCHAR
+OUTSTD
+buf PRINTASTRING ;
+
+# A5 PRINT
+: testoutustring
+buf OUTUSTRING
+# B5 PRINT
+# 0 PRINTCHAR
+OUTSTD
+buf PRINTUSTRING ;
+
+# A6 PRINT
+: testoutfile
+" test.txt" OUTFILE 
+# B6 PRINT 
+CLOSEOUT
+OUTSTD ;
+
+testdoastring
+testdoustring
+testoutastring
+testoutustring
+testoutfile
+
+# FFF PRINT

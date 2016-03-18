@@ -1,0 +1,6 @@
+: SUC 1 + ;
+
+: hello
+ 0 Z" Hello World !" Z" Message" 0
+ Z" User32.dll" Z" MessageBoxA" CALLAPI4 ;
+ 

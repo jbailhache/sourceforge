@@ -1,0 +1,69 @@
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: array CREATE cells ALLOT DOES> SWAP cells + ;
+# 2 array x
+
+CREATE buf # 100 ALLOT 
+
+: printstr
+ BEGIN
+  DUP C@
+ WHILE
+  DUP C@ CALL writecarac 1 DROP
+  # 1 +
+ REPEAT
+ DROP ;
+
+: test1
+# 3 DCALL doubleofint 1
+# 4 DCALL doubleofint 1
+DCALL ddiv 4
+" resultat=%lf***" buf CALL sprintf 4
+buf printstr ;
+
+: test2
+# 1234 DCALL doubleofint 1 
+" %lf" buf CALL sprintf 4
+buf printstr ;
+
+: test3
+# 0 x " %lf" " 123.456" CALL sscanf 3
+# 1 x # 0 x " %lf" buf CALL sprintf 4
+buf printstr ;
+
+: test4
+# 3 DCALL doubleofint 1
+# 4 DCALL doubleofint 1
+DCALL ddiv 4
+# 64 DCALL doubleofint 1
+DCALL dmult 4
+CALL intofdouble 2
+PRINT ;
+
+: test5
+# 0 x " %lf" " 1.25" CALL sscanf1 3 DROP 
+# 1 x @ # 0 x @ 
+# 1 DCALL doubleofint 1
+DCALL ddiv 4
+" inverse=%lf***" buf CALL sprintf 4 buf printstr ;
+
+: test6
+# 0 x " %lf" " 123.456" CALL sscanf1 3 DROP
+# 0 x PRINT # 1 x PRINT
+# 1 x @ # 0 x @
+" x=%lf***" buf CALL sprintf 4 buf printstr ;
+
+# 1 PRINT
+test1
+# 4 PRINT
+test4
+# 5 PRINT
+test5
+# 6 PRINT
+test6
+
+# EEE PRINT
+

@@ -1,0 +1,8 @@
+: testtick
+ ' + PRINT ;
+
+testtick
+
+' + PRINT
+
+# FFF PRINT

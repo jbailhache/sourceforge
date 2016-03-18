@@ -1,0 +1,25 @@
+CREATE a
+CREATE b
+CREATE c
+
+: -v (( VARG a VARG b ))
+ a @ b @ -
+ POP 1 END PUSH 1 ;
+
+# 9 # 4 -v PRINT
+
+: -c (( CARG a CARG b ))
+ a b -
+ POP 1 END PUSH 1 ;
+
+# A # 4 -c PRINT 
+
+: carresomme (( CARG a CARG b ))
+ a b + CARG c
+ c c *
+ POP 1 END PUSH 1 ;
+
+# 1 # 2 carresomme PRINT
+
+# FFF PRINT
+ 

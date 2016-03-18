@@ -1,0 +1,4 @@
+
+: +I COMPILE + ; IMMEDIATE
+: TEST+I # 4 # 6 +I PRINT ;
+TEST+I # A PRINT 

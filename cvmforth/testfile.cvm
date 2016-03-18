@@ -1,0 +1,46 @@
+tasm public _lw
+
+r0=0
+r1=@fnin
+fopen
+rA=@fdin
+[rA]=r0
+r0=1
+r1=@fnout
+fopen
+rA=@fdout
+[rA]=r0
+rA=@fdin
+r0=[rA]
+fgetc
+r1=r0
+r0=1
+r0=r0+r1
+r1=r0
+rA=@fdout
+r0=[rA]
+fputc
+rA=@fdin
+r0=[rA]
+fclose
+rA=@fdout
+r0=[rA]
+fclose
+exit
+
+align 4
+:fdin
+res 4
+:fdout
+res 4
+:fnin
+ascii in.txt
+db 0
+:fnout
+ascii out.txt
+db 0
+
+:_lw
+res 4
+
+

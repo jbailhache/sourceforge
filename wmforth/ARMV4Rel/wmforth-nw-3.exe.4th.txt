@@ -1,0 +1,22 @@
+3 5 + .
+CARGS a b : subs a b - POP 1 END PUSH 1 ;
+: sub { a b } a b - ;
+: sub2 { a b \ c } ^ a @ b - -> c c ;
+: testlocals { a b c } a b - b c - ;
+: testloc1 { a b \ c } ^ a @ b + -> c c . ;
+: testloc2 { a b } a b -  ;
+1234 .
+8 3 subs .
+9 3 sub .
+5678 .
+
+
+
+
+
+
+
+
+
+
+

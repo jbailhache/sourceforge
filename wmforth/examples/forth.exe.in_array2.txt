@@ -1,0 +1,12 @@
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: array CREATE ALLOT DOES> SWAP cells + ;
+# 2 cells array x
+
+CREATE buf # 100 ALLOT 
+
+# FFF PRINT
+

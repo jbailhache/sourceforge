@@ -1,0 +1,140 @@
+
+(
+
+(def test : CDR CAR)
+
+(def CADDR : CDR CDR CAR)
+
+(def CONTIENT : C Q : ARG _f : ARG _x : ARG _l :
+	%_l NCONSPTHEN '() :
+	%_l CAR %_x %_f EXEC : REP THEN I :
+	DEP %_l CDR %_x Q () %_f CONS Q CONTIENT CONS EXEC)
+
+(def UNLIST : ARG l :
+	%l NCONSPTHEN I :
+	%l CAR %l CDR UNLIST)
+
+(def ONEOF : ARG l :
+	%l NCONSPTHEN END :
+	ALT (%l CAR) :
+	%l CDR ONEOF)
+
+{
+(def AND : C Q : C Q : ARG __y : ARG __x :
+	Q () Q () Q () CONS Q Q CONS CONS %__y CONS Q THEN CONS %__x CONS EXEC)
+
+(def OR : C Q : C Q : ARG y : ARG x :
+	Q () Q () %y CONS Q DEP CONS CONS Q I CONS Q THEN CONS Q REP CONS 
+	%x CONS EXEC) 
+}
+
+(def AND : C THEN '())
+
+(def OR : B (REP THEN I) DEP)
+
+(def EXIT KI)
+
+(def TOP :
+	Y : 
+	"LPIA> " PRINTSTRING READ EXEC)
+
+(def #T '#T)
+
+(def UNDEF 'UNDEFINED)
+
+(Q (0 0) SETSTRAT)
+
+(def synonym def)
+
+(def GETPRIO :
+	GETSTRAT CAR)
+
+(def SETPRIO : ARG i :
+        GETSTRAT ARG (p . s) :
+        %(i . s) SETSTRAT)
+
+(def GETINCR :
+	GETSTRAT CDR CAR)
+
+(def SETINCR : ARG i :
+        GETSTRAT ARG (p i1 . s) :
+        %(p i . s) SETSTRAT)
+
+(def MAJPRIO :
+	GETPRIO GETINCR PLUS SETPRIO)
+
+(def INCRPRIO : ARG i :
+	GETSTRAT ARG (p . s) :
+	%p %i PLUS ARG p1 :
+	%(p1 . s) SETSTRAT)
+
+(def SCHEDULE : ALT END I)
+
+{
+(def ALT : C Q : C Q : ARG x : ARG y :
+	%('ALT2 x ('ALT2 y 'END)) EXEC)
+}
+
+{
+(def ALT :
+	S (K (S ALT2)) (S (K K) (S ALT2 (K END))))
+}
+
+(def ALT : MAJPRIO ALTNP)
+
+(def PARCOURS : ARG x :
+	{ MAJPRIO }	
+	{ GETPRIO PRIN " : " PRINTSTRING }
+	%x PRINT :
+	%x NCONSPTHEN I : 
+	ALT (%x CAR PARCOURS)
+	    (%x CDR PARCOURS))
+
+(def VAR GETVQ)
+
+(def DANS : ARG x : ARG y :
+	%x %y EQUAL THEN '#T :
+	%y NCONSPTHEN '() :
+	%y CAR %x DANS OR :
+	%y CDR %x DANS)
+
+(def RTRANSLIST1 : C Q : ARG _tl_f : ARG _tl_p : ARG _tl_a : ARG _tl_l :
+	%_tl_l NCONSPTHEN %_tl_a :
+	%_tl_l CDR
+	%_tl_a %_tl_l CAR %_tl_p %_tl_f EXEC :
+	%_tl_p
+	%('TRANSLIST _tl_f) EXEC) 
+
+(def TRANSLIST : C Q : ARG _tl_f : ARG _tl_p : ARG _tl_a : ARG _tl_l :
+	%_tl_l NCONSPTHEN %_tl_a :
+	%_tl_l CDR %_tl_a %_tl_p %('TRANSLIST _tl_f) EXEC :
+	%_tl_l CAR %_tl_p %_tl_f EXEC)
+
+(defclause plequal (&x &x) I)
+
+(def LAST : ARG l :
+	%l NCONSPTHEN %l :
+	%l CDR NCONSPTHEN %l :
+	%l CDR LAST)
+
+(def BUTLAST : ARG l :
+	%l NCONSPTHEN '() :
+	%l CDR NCONSPTHEN '() :
+	%l CDR BUTLAST %l CAR CONS)
+
+(def defprop : C Q : C Q : C Q : ECH3 SETPROP)
+
+(def GET GETVSQ)
+
+(def N_NEXT : 90 GETREG)
+
+(def _UDF : C Q : ARG f : 
+	"Undefined function " PRINTSTRING %f PRIN 
+	" at step " PRINTSTRING N_NEXT PRINT   
+	STEPON)
+
+(def _BRK : 
+	"|\0A*** BREAK ***|\0A" PRINTSTRING STEPON)
+
+)
+

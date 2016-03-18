@@ -1,0 +1,236 @@
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: cells 0x 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOTW DOES> SWAP cells + ;
+
+CARGS message : trace1
+ 0x 0 L" trace" message 0x 0 CALL MessageBox 4 DROP 
+ END ;
+
+: trace DROP ;
+
+: nop ;
+
+0x A array wc
+0x 0 variable hWnd
+0x 0 variable hEdit1
+0x 0 variable hButton1
+0x B array wp
+CREATE buf 0x 800 ALLOTW
+0x 0 variable i
+CREATE ps 0x C ALLOTW
+0x 0 variable hdc
+0x 0 variable brush
+0x 0 variable pen
+CREATE msg 0x 7 ALLOTW
+
+: allot-buf 0x 100 ALLOTW ;
+CREATE buf allot-buf ; 
+
+: top
+L" top" trace
+BEGIN
+ L" loop" trace
+ 0x 1
+WHILE
+ L" apres WHILE" trace
+ buf OUTUSTRING
+ 0x 0 INPUT 
+ DUP trace
+ DOUSTRING L" ;;" 0x 6 MAINLOOP
+ 0x 0 PRINTCHAR
+ OUTSTD
+ buf trace
+ buf 0x 0 0x C HEDIT1 CALL SendMessage 4 DROP 
+ L" avant REPEAT" trace
+REPEAT
+L" apres REPEAT" trace
+;
+
+
+CARGS  lparam wparam message hwnd : paint
+ ps hwnd CALL BeginPaint 2 hdc !
+ 0x 10 0x 20 0x 30 RGB 0x 50 0x 30 COORD hdc @ SETPIXEL DROP
+ ps hwnd CALL EndPaint 2 DROP  
+ END ;
+
+CREATE rect 0x 5C , 0x 12C , 0x 28 , 0x E6 ,
+
+CARGS  lparam wparam message hwnd : paint1
+    ps hwnd CALL BeginPaint 2 hdc !
+   0x 40C080 CALL CreateSolidBrush 1 brush !
+   brush @ hdc @ CALL SelectObject 2 DROP
+   0x 302010 0x 5 0x 0 CALL CreatePen 3 pen !
+   pen @ hdc @ CALL SelectObject 2 DROP
+   rect 
+   hdc @ RECTANGLE DROP
+   ps hwnd CALL EndPaint 2 DROP      
+ END 
+;
+
+0x 0 variable i
+
+CARGS  lparam wparam message hwnd : paint2
+    ps hwnd CALL BeginPaint 2 hdc !
+    0x 1 i !
+    BEGIN
+     i @ 0x FF = ~
+    WHILE
+     i @ 0x 0 0x 0 RGB i @ 0x 60 COORD hdc @ SETPIXEL DROP
+     i @ 0x 1 + i !
+    REPEAT
+    ps hwnd CALL EndPaint 2 DROP       
+ END
+;
+
+0x 0 variable a
+0x 0 variable b
+0x 0 variable x
+0x 0 variable y
+0x 0 variable x1
+0x 40 constant e
+0x 0 variable j
+0x 0 variable t
+0x 0 variable r
+0x 0 variable g
+0x 0 variable bl
+0x 0 variable c
+0x 0 variable cont
+ 
+CARGS hdc1 : mandelbrot
+0x 0 i !
+ BEGIN
+  i @ 0x 3 e * <
+ WHILE
+  0x 0 j !
+  BEGIN
+   j @ 0x 2 e * <
+  WHILE
+   i @ 0x 2 e * - a !
+   j @ e - b !
+   0x 0 x !
+   0x 0 y !
+   0x 0 t !
+   0x 1 cont !
+
+   BEGIN
+    t @ 0x 20 < cont @ &&
+   WHILE
+    x @ x @ * e / y @ y @ * e / - a @ + x1 !
+    0x 2 x @ * y @ * e / b @ + y !
+    x1 @ x !
+    
+    x @ x @ * e / y @ y @ * e / + 0x 4 e * >
+    IF 0x 0 cont ! ELSE nop THEN
+
+    t @ 0x 1 + t !
+   REPEAT
+
+   t @ 0x FF * 0x 8 / r !
+   r @ 0x FF > IF 0x FF r ! ELSE nop THEN
+   x @ x @ * y @ y @ * + 0x 10 * e / e / g !
+   g @ 0x FF > IF 0x FF g ! ELSE nop THEN
+   x @ x @ * y @ y @ * + 0x 400 * e / e / bl !
+   bl @ 0x FF > IF 0x FF bl ! ELSE nop THEN
+
+   r @ g @ bl @ RGB c !
+
+   c @ i @ j @ 0x 90 + COORD hdc1 SETPIXEL DROP
+   j @ 0x 1 + j !
+  REPEAT
+  i @ 0x 1 + i !
+ REPEAT
+END ;
+
+CARGS  lparam wparam message hwnd : paint3
+    ps hwnd CALL BeginPaint 2 hdc !
+    hdc @ mandelbrot
+    ps hwnd CALL EndPaint 2 DROP       
+ END
+;
+
+RAWCODEMACRO: paintproc 
+ ASM{
+ PUSH RD 4F00
+ }
+ RESTORESTACK
+ PUSH F
+ paint3
+ SAVESTACK
+ ASM{ 
+ POP RD 8F00
+  }
+;RAWCODE
+
+MACRO: paintproc1
+ RESTORESTACK
+ PUSH F DROP DROP DROP DROP
+ SAVESTACK
+ ; 
+
+
+' paintproc 0x 4 + @ SETPAINTPROC
+
+
+RAWCODEMACRO: paintasm
+ ASM{
+ RC = RD
+ PUSH RD 0001
+ PUSH RD 5030
+ RD = RD - 54
+ R5 = R0
+ R1 = RD + 14
+ BeginPaint ()
+ R4 = R0
+ R1 = RD + 4
+ R0 = R5
+ GetClientRect ()
+ R0 = [1FB28]
+ CreateSolidBrush ()
+ R1 = R0
+ R0 = R4
+ SelectObject ()
+ R2 = [1FB24]
+ R1 = 5
+ R0 = 0
+ CreatePen ()
+ R1 = R0
+ R0 = R4
+ SelectObject ()
+ R3 = 5A
+ [RD+0] = R3
+ R2 = 28
+ R3 = [1FB30]
+ R1 = E6
+ R0 = R4
+ Rectangle ()
+ R1 = RD + 14
+ R0 = R5
+ EndPaint ()
+ RD = RD + 54
+ RR0xA030 = [RD+]
+1FB24: 00302010 
+1FB28: 0040C080 
+1FB2C: E92D4000  
+1FB30: 0000012C
+1FB34: 00000000
+} ;RAWCODE
+
+REM ///
+' paintasm 0x 4 + @ SETPAINTPROC
+///
+
+top
+
+
+
+
+  
+
+ 

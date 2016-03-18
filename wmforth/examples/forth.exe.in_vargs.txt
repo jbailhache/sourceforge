@@ -1,0 +1,12 @@
+
+VARGS a b : m
+ a @ b @ -
+POP 1 END PUSH 1 ;
+
+: testm
+# 9 # 3 m PRINT ;
+
+testm
+
+# FFF PRINT
+

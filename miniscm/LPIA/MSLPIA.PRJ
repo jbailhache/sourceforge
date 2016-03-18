@@ -1,0 +1,12 @@
+data.c
+error.c
+init.c
+io.c
+kernel.c
+lpia.c
+main.c
+memory.c
+ms.c
+opexe7.c
+opexe8.c
+util.c

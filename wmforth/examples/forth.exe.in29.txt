@@ -1,0 +1,73 @@
+
+: trace PRINT ;
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOT
+# 0 variable i
+CREATE ps # C ALLOT
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+CREATE msg # 7 ALLOT
+
+# A1 PRINT
+
+: test3
+L" Bonjour" # 0 # C HEDIT1 CALL SendMessage 4 DROP
+# 0 INPUT PRINTUSTRING
+;
+
+: toplevel
+L" Bonjour" # 0 # C HEDIT1 CALL SendMessage 4 DROP
+BEGIN
+ # 1
+WHILE
+ buf OUTUSTRING
+ # 0 INPUT 
+ DUP # 0 SWAP L" entree" SWAP # 0 CALL MessageBox 4 DROP
+ DOUSTRING
+ # 0 PRINTCHAR
+ OUTSTD
+ # 0 L" resultat" buf # 0 CALL MessageBox 4 DROP
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+REPEAT
+;
+
+CARGS hwnd message wparam lparam : paint
+   ps hwnd CALL BeginPaint 2 hdc !
+   # 40C080 CALL CreateSolidBrush 1 brush !
+   brush @ hdc @ CALL SelectObject 2 DROP
+   # 302010 # 5 # 0 CALL CreatePen 3 pen !
+   pen @ hdc @ CALL SelectObject 2 DROP
+   # 5C # 12C # 28 # E6 hdc @ CALL Rectangle 5 DROP
+   ps hwnd CALL EndPaint 2 DROP       
+;
+
+MACRO: paintproc
+ PUSH F paint ; 
+
+REM ///
+' paintproc # 4 + SETPAINTPROC
+///
+
+toplevel
+
+# FFF trace
+
+
+  
+
+ 

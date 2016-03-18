@@ -1,0 +1,51 @@
+
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+CREATE wsadata # 64 ALLOT
+# 0 variable s
+# 0 variable port
+# 0 variable host
+# 0 variable addr
+CREATE sa # 4 ALLOT
+# 0 variable i
+# 0 var ptrs
+CREATE bufr # 100 ALLOT
+CREATE bufm # 200 ALLOT
+
+: testweb
+ wsadata # 101 CALL WSAStartup 2 DROP
+ # 6 # 1 # 2 CALL socket 3 s !
+ # 50 CALL htons 1 port !
+ " www.yahoo.fr" CALL gethostbyname 1 host !
+ host @ # C + @ addr !
+ # 0 sa ! 
+ # 0 sa # 4 + !
+ # 0 sa # 8 + !
+ # 0 sa # C + !
+ # 2 sa H!
+ port @ sa # 2 + H!
+ addr @ sa # 4 + !
+ # 10 sa s @ CALL connect 3 DROP
+ " GET / HTTP/1.0  " ptrs !
+ # A ptrs # E + C!
+ # A ptrs # F + C!
+ # 0 # 10 ptrs @ s @ CALL send 4 DROP
+ # 0 # 100 bufr s @ CALL recv 4 DROP
+ # 0 i !
+ BEGIN
+  i @ # 100 <
+ WHILE
+  bufr i @ + C@ bufm i @ # 2 * + H!
+ REPEAT
+ # 0 L" received" bufm # 0 CALL MessageBox 4 DROP
+;
+
+testweb

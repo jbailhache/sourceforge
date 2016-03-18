@@ -1,0 +1,168 @@
+
+RESTOREDIC> D1
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+
+( test commentaire immediat )
+
+: testnocom * ;
+: testcom ( test commentaire compile ) + ;
+: testcom2 - ;
+( autre essai )
+: testcom3 \ test
+;
+
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOTW DOES> SWAP cells + ;
+
+CARGS message : trace1
+ # 0 L" trace" message # 0 CALL MessageBox 4 DROP 
+ END ;
+
+: trace DROP ;
+
+: nop ;
+
+: tic
+ L" GetTickCount"
+ L" coredll.dll" CALL GetModuleHandle 1
+ CALL GetProcAddress 2
+ CALLADR
+ PUSH 1
+;
+
+: coredll 
+ L" coredll.dll" CALL GetModuleHandle 1 ;
+
+: ticadr
+ L" GetTickCount" coredll CALL GetProcAddress 2 ;
+
+: tik
+ CM coredll.dll GetTickCount 0 ;
+
+: testif
+ # 0 IF # 1BAD PRINT ELSE # 1DAC PRINT THEN
+ # 1 IF # 2DAC PRINT ELSE # 2BAD PRINT THEN
+ # 0 IF # 3BAD PRINT THEN
+ # 1 IF # 4DAC PRINT THEN
+;
+
+: testasm
+ASM{
+12345678
+23456789
+3456789A
+} ;
+
+CREATE wsadata # 190 ALLOTW
+# 0 variable s
+# 0 variable port
+# 0 variable host
+# 0 variable addr
+CREATE sa # 4 ALLOTW
+# 0 variable status
+# 0 variable ptr
+CREATE bufr # 100 ALLOTW
+CREATE bufm # 200 ALLOTW
+# 0 variable len
+# 0 variable j
+
+: testweb
+ wsadata # 101 CALL WSAStartup 2 PRINT
+ # 6 # 1 # 2 CALL socket 3 s ! s @ PRINT
+ # 50 CALL htons 1 port ! port @ PRINT
+ " www.yahoo.fr" CALL gethostbyname 1 host ! host @ PRINT
+ host @ # C + @ @ @ addr ! addr @ PRINT ( addr @ PRINTASTRING ) 
+ ( # 33BA92D9 addr ! )
+ # 2 sa H!
+ port @ sa # 2 + H!
+ addr @ sa # 4 + !
+ # 0 sa # 8 + ! 
+ # 0 sa # C + !
+ # 10 sa s @ CALL connect 3 status ! status @ PRINT
+ WSAGETLASTERROR PRINT 
+ " GET / HTTP/1.0  " ptr !
+ # A ptr @ # E + C!
+ # A ptr @ # F + C!
+ ptr @ PRINTASTRING
+ # FFF PRINT
+ # 0 # 10 ptr @ s @  CALL send 4 PRINT 
+ # 0 # 400 bufr s @  CALL recv 4 len !
+ # 0 j !
+ BEGIN
+  j @ len @ <
+ WHILE
+  bufr j @ + C@ bufm j @ # 2 * + H!
+  j @ # 1 + j !
+ REPEAT
+ # 0 L" received" bufm # 0 CALL MessageBox 4 PRINT
+;
+
+: testnl L" ABC
+DEF" DUP # 3 + @ PRINT # 4 + @ PRINT ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOTW
+# 0 variable i
+CREATE ps # C ALLOTW
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+CREATE msg # 7 ALLOTW
+
+CARGS n : testloop
+ # 0 i !
+ BEGIN
+  i @ n <
+ WHILE
+  i @ # 1 + i !
+ REPEAT 
+ END ;
+
+: allot-buf # 100 ALLOTW ;
+CREATE buf allot-buf ; 
+
+: top
+L" top" trace
+BEGIN
+ L" loop" trace
+ # 1
+WHILE
+ L" apres WHILE" trace
+ buf OUTUSTRING
+ # 0 INPUT 
+ DUP trace
+ DOUSTRING L" ;;" # 6 MAINLOOP
+ # 0 PRINTCHAR
+ OUTSTD
+ buf trace
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+ L" avant REPEAT" trace
+REPEAT
+L" apres REPEAT" trace
+;
+
+: hello
+ # 0 L" Message" L" Welcome to Forth" # 0
+ CALL MessageBox 4 DROP ;
+
+hello
+
+top
+
+
+
+
+  
+
+ 

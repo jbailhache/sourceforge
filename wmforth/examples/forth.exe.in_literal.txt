@@ -1,0 +1,16 @@
+
+: +I COMPILE + ; IMMEDIATE
+: TEST+I # 4 # 6 +I PRINT ;
+
+: LITERAL
+ # E59F0000 ,
+ # EA000000 , ,
+ # E92B0001 , ; IMMEDIATE 
+
+REM ---
+: testlit [ # 1234 ] LITERAL ;
+testlit PRINT
+---
+# FFF PRINT
+
+ 

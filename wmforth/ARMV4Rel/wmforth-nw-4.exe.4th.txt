@@ -1,0 +1,10 @@
+3 5 + .
+CARGS a b : subs a b - POP 1 END PUSH 1 ;
+: sub { a b \ c } ^ a @ b - -> c c ;
+8 3 subs .
+9 3 sub .
+
+
+
+
+

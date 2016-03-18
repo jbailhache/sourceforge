@@ -1,0 +1,158 @@
+
+: trace PRINT ;
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOT
+# 0 variable i
+CREATE ps # C ALLOT
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+CREATE msg # 7 ALLOT
+
+CARGS lParam wParam message hWnd : WndProc1
+ message # 111 = IF
+  lParam hButton1 @ = IF
+   buf # 400 # D hEdit1 @ CALL SendMessage 4 DROP
+   # 0 i !
+   BEGIN buf i @ # 2 * + H@ WHILE
+    buf i @ # 2 * + H@ # 1 + buf i @ # 2 * + H!
+    i @ # 1 + i !
+   REPEAT    
+   buf # 0 # C hEdit1 @ CALL SendMessage 4 DROP
+  ELSE
+
+   lParam wParam message hWnd CALL DefWindowProc 4 DROP
+  THEN  
+
+ ELSE
+  message # F = IF
+   ps hWnd @ CALL BeginPaint 2 hdc !
+   # 40C080 CALL CreateSolidBrush 1 brush !
+   brush @ hdc @ CALL SelectObject 2 DROP
+   # 302010 # 5 # 0 CALL CreatePen 3 pen !
+   pen @ hdc @ CALL SelectObject 2 DROP
+   # 5C # 12C # 28 # E6 hdc @ CALL Rectangle 5 DROP
+   ps hWnd @ CALL EndPaint 2 DROP       
+  ELSE
+   message # 2 = IF
+    # 0 CALL PostQuitMessage 1 DROP
+   ELSE
+    lParam wParam message hWnd CALL DefWindowProc 4 DROP
+   THEN
+  THEN
+ THEN
+POP 1 END PUSH 1 ;
+
+MACRO: WndProc
+ PUSH F
+ WndProc1
+ POP 1
+;
+
+: ClassName L" TestWin" ;
+
+# 80000000 constant CW_USEDEFAULT
+
+: InitInstance
+
+ # B1 trace
+
+ L" EDIT" # 0 wp !
+ L" Test" # 1 wp !
+ # D0B010C4 # 2 wp !
+ # 14 # 3 wp !
+ # 28 # 4 wp !
+ # C8 # 5 wp !
+ # 3C # 6 wp !
+ MAINWINDOW @ # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hEdit1 !
+
+ # B2 trace
+ hEdit1 @ trace
+ CALL GetLastError 0 trace
+
+ # B3 trace
+
+ L" BUTTON" # 0 wp !
+ L" OK" # 1 wp !
+ # D0800000 # 2 wp !
+ # 14 # 3 wp !
+ # 8C # 4 wp !
+ # 32 # 5 wp !
+ # 14 # 6 wp !
+ MAINWINDOW @ # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hButton1 !
+
+ # B4 trace
+ hButton1 @ trace
+ CALL GetLastError 0 trace
+
+ # B5 trace
+ CMDSHOW MAINWINDOW @ CALL ShowWindow 2 trace
+ MAINWINDOW @ CALL UpdateWindow 1 trace
+ 
+ # B6 trace
+;
+
+: TestWin
+ # C1 trace
+ InitInstance
+ # C2 trace
+ ' WndProc # 4 + @ SETMAINWINDOWPROC
+ # C3 trace
+ BEGIN
+  # 0 # 0 # 0 msg CALL GetMessage 4
+ WHILE
+  msg CALL TranslateMessage 1 DROP
+  msg CALL DispatchMessage 1 DROP
+ REPEAT
+ # CF trace
+;
+
+
+# A1 trace
+
+ClassName PRINTUSTRING
+
+# A2 trace
+
+: testwndproc
+' WndProc # 4 + @ PRINT ;
+
+testwndproc
+
+# A3 trace
+
+: testmessage
+# 0 L" Test" L" Bonjour" # 0 CALL MessageBox 4 DROP ;
+
+# A4 trace
+
+TestWin
+
+# FFF trace
+
+
+  
+
+ 

@@ -1,0 +1,249 @@
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+CARGS message : trace1
+ # 0 L" trace" message # 0 CALL MessageBox 4 DROP 
+ END ;
+
+: trace DROP ;
+
+: nop ;
+
+: tick
+ CM coredll.dll GetTickCount 0 ;
+
+# 0 variable t1
+# 0 variable t2
+# 0 variable dt
+
+: printt 
+ t1 @ PRINT t2 @ PRINT dt @ PRINT ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE buf # 800 ALLOT
+# 0 variable i
+CREATE ps # C ALLOT
+# 0 variable hdc
+# 0 variable brush
+# 0 variable pen
+CREATE msg # 7 ALLOT
+
+: allot-buf # 100 ALLOT ;
+CREATE buf allot-buf ; 
+
+: top
+L" top" trace
+BEGIN
+ L" loop" trace
+ # 1
+WHILE
+ L" apres WHILE" trace
+ buf OUTUSTRING
+ # 0 INPUT 
+ DUP trace
+ DOUSTRING L" ;;" # 6 MAINLOOP
+ # 0 PRINTCHAR
+ OUTSTD
+ buf trace
+ buf # 0 # C HEDIT1 CALL SendMessage 4 DROP 
+ L" avant REPEAT" trace
+REPEAT
+L" apres REPEAT" trace
+;
+
+
+CARGS  lparam wparam message hwnd : paint
+ ps hwnd CALL BeginPaint 2 hdc !
+ # 10 # 20 # 30 RGB # 50 # 30 COORD hdc @ SETPIXEL DROP
+ ps hwnd CALL EndPaint 2 DROP  
+ END ;
+
+CREATE rect # 5C , # 12C , # 28 , # E6 ,
+
+CARGS  lparam wparam message hwnd : paint1
+    ps hwnd CALL BeginPaint 2 hdc !
+   # 40C080 CALL CreateSolidBrush 1 brush !
+   brush @ hdc @ CALL SelectObject 2 DROP
+   # 302010 # 5 # 0 CALL CreatePen 3 pen !
+   pen @ hdc @ CALL SelectObject 2 DROP
+   rect 
+   hdc @ RECTANGLE DROP
+   ps hwnd CALL EndPaint 2 DROP      
+ END 
+;
+
+# 0 variable i
+
+CARGS  lparam wparam message hwnd : paint2
+    ps hwnd CALL BeginPaint 2 hdc !
+    # 1 i !
+    BEGIN
+     i @ # FF = ~
+    WHILE
+     i @ # 0 # 0 RGB i @ # 60 COORD hdc @ SETPIXEL DROP
+     i @ # 1 + i !
+    REPEAT
+    ps hwnd CALL EndPaint 2 DROP       
+ END
+;
+
+# 0 variable a
+# 0 variable b
+# 0 variable x
+# 0 variable y
+# 0 variable x1
+# 40 constant e
+# 0 variable j
+# 0 variable t
+# 0 variable r
+# 0 variable g
+# 0 variable bl
+# 0 variable c
+# 0 variable cont
+ 
+CARGS hdc1 : mandelbrot
+# 0 i !
+ BEGIN
+  i @ # 3 e * <
+ WHILE
+  # 0 j !
+  BEGIN
+   j @ # 2 e * <
+  WHILE
+   i @ # 2 e * - a !
+   j @ e - b !
+   # 0 x !
+   # 0 y !
+   # 0 t !
+   # 1 cont !
+
+   BEGIN
+    t @ # 20 < cont @ &&
+   WHILE
+    x @ x @ * e / y @ y @ * e / - a @ + x1 !
+    # 2 x @ * y @ * e / b @ + y !
+    x1 @ x !
+    
+    x @ x @ * e / y @ y @ * e / + # 4 e * >
+    IF # 0 cont ! ELSE nop THEN
+
+    t @ # 1 + t !
+   REPEAT
+
+   t @ # FF * # 8 / r !
+   r @ # FF > IF # FF r ! ELSE nop THEN
+   x @ x @ * y @ y @ * + # 10 * e / e / g !
+   g @ # FF > IF # FF g ! ELSE nop THEN
+   x @ x @ * y @ y @ * + # 400 * e / e / bl !
+   bl @ # FF > IF # FF bl ! ELSE nop THEN
+
+   r @ g @ bl @ RGB c !
+
+   c @ i @ j @ # 32 + COORD hdc1 SETPIXEL DROP
+   j @ # 1 + j !
+  REPEAT
+  i @ # 1 + i !
+ REPEAT
+END ;
+
+CARGS  lparam wparam message hwnd : paint3
+    ps hwnd CALL BeginPaint 2 hdc !
+    tick t1 !
+    hdc @ mandelbrot
+    tick t2 ! 
+    t2 @ t1 @ - dt !
+    ps hwnd CALL EndPaint 2 DROP       
+ END
+;
+
+RAWCODEMACRO: paintproc 
+ ASM{
+ PUSH RD 4F00
+ }
+ RESTORESTACK
+ PUSH F
+ paint3
+ SAVESTACK
+ ASM{ 
+ POP RD 8F00
+  }
+;RAWCODE
+
+MACRO: paintproc1
+ RESTORESTACK
+ PUSH F DROP DROP DROP DROP
+ SAVESTACK
+ ; 
+
+
+' paintproc # 4 + @ SETPAINTPROC
+
+
+RAWCODEMACRO: paintasm
+ ASM{
+ RC = RD
+ PUSH RD 0001
+ PUSH RD 5030
+ RD = RD - 54
+ R5 = R0
+ R1 = RD + 14
+ BeginPaint ()
+ R4 = R0
+ R1 = RD + 4
+ R0 = R5
+ GetClientRect ()
+ R0 = [1FB28]
+ CreateSolidBrush ()
+ R1 = R0
+ R0 = R4
+ SelectObject ()
+ R2 = [1FB24]
+ R1 = 5
+ R0 = 0
+ CreatePen ()
+ R1 = R0
+ R0 = R4
+ SelectObject ()
+ R3 = 5A
+ [RD+0] = R3
+ R2 = 28
+ R3 = [1FB30]
+ R1 = E6
+ R0 = R4
+ Rectangle ()
+ R1 = RD + 14
+ R0 = R5
+ EndPaint ()
+ RD = RD + 54
+ RR#A030 = [RD+]
+1FB24: 00302010 
+1FB28: 0040C080 
+1FB2C: E92D4000  
+1FB30: 0000012C
+1FB34: 00000000
+} ;RAWCODE
+
+REM ///
+' paintasm # 4 + @ SETPAINTPROC
+///
+
+top
+
+
+
+
+  
+
+ 

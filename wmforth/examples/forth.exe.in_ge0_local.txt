@@ -1,0 +1,61 @@
+CARGS x y LOCAL a : f
+ x y + a !
+ a @ a @ *
+ POP 1 END PUSH 1 ;
+
+# 1 # 2 f PRINT 
+
+: codeinstr
+# E59F1000 ,
+# EA000000 ,
+,
+# E4801004 ,
+;
+
+: coderet
+# E1A0F00E , ;
+
+CREATE GE0
+LASTWORD @ # 8 + @
+LASTWORD @ # 4 + !
+
+# E3A01000 codeinstr
+# E8BB0001 codeinstr 
+# E1B00000 codeinstr
+# 53A01001 codeinstr
+# E92B0002 codeinstr
+coderet
+
+CREATE &
+LASTWORD @ # 8 + @
+LASTWORD @ # 4 + !
+# E8BB0003 codeinstr 
+# E0000001 codeinstr 
+# E92B0001 codeinstr 
+coderet 
+
+# 7 # E & PRINT
+
+: lt0 # 80000000 & ;
+: ~ IF # 0 ELSE # 1 THEN ;
+: ge0 lt0 ~ ;
+
+: test
+# 3 >=0 PRINT
+# 0 # 3 - >=0 PRINT ;
+test
+
+VARGS n LOCAL f : fact
+ # 1 f !
+ BEGIN
+  n @ # 2 - >=0
+ WHILE
+  n @ f @ * f !
+  n @ # 1 - n !
+ REPEAT
+ POP 1 END PUSH 1 ;
+
+# 4 fact PRINT
+
+# FFF PRINT
+

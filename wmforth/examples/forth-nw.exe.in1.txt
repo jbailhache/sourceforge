@@ -1,0 +1,108 @@
+
+: DROP POP 1 ;
+: DUP POP 1 PUSH 1 PUSH 1 ;
+: SWAP POP 1 POP 2 PUSH 1 PUSH 2 ;
+: cells # 4 * ;
+
+: constant CREATE , DOES> @ ;
+: variable CREATE , DOES> ;
+: array CREATE ALLOT DOES> SWAP cells + ;
+
+# A array wc
+# 0 variable hWnd
+# 0 variable hEdit1
+# 0 variable hButton1
+# B array wp
+CREATE msg # 7 ALLOT
+
+MACRO: WndProc
+
+;
+
+: ClassName L" TestWin" ;
+
+# 80000000 constant CW_USEDEFAULT
+
+: RegisterMyClass
+# 3 # 0 wc !
+' WndProc # 4 + # 1 wc !
+# 0 # 2 wc !
+# 0 # 3 wc !
+INSTANCE # 4 wc !
+# 0 # 5 wc !
+# 0 # 6 wc !
+# 0 CALL GetStockObject 1 # 7 wc !
+# 0 # 8 wc !
+ClassName # 9 wc !
+# 0 wc CALL RegisterClass 1 PRINT ;
+
+: InitInstance
+ RegisterMyClass
+
+ ClassName # 0 wp !
+ L" Titre" # 1 wp !
+ # 10000000 # 2 wp !
+ CW_USEDEFAULT # 3 wp !
+ CW_USEDEFAULT # 4 wp !
+ CW_USEDEFAULT # 5 wp !
+ CW_USEDEFAULT # 6 wp !
+ # 0 # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hWnd !
+hWnd @ PRINT
+
+ L" EDIT" # 0 wp !
+ L" " # 1 wp !
+ # D0B010C4 # 2 wp !
+ # 14 # 3 wp !
+ # 28 # 4 wp !
+ # C8 # 5 wp !
+ # 3C # 6 wp !
+ hWnd @ # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hEdit1 !
+hEdit1 @ PRINT
+CALL GetLastError 0 PRINT
+
+ L" BUTTON" # 0 wp !
+ L" " # 1 wp !
+ # 50800000 # 2 wp !
+ # 14 # 3 wp !
+ # 8C # 4 wp !
+ # 32 # 5 wp !
+ # 14 # 6 wp !
+ hWnd @ # 7 wp !
+ # 0 # 8 wp !
+ INSTANCE # 9 wp !
+ # 0 # A wp !
+ # 0 wp CREATEWINDOW hButton1 !
+hButton1 @ PRINT
+CALL GetLastError 0 PRINT
+
+ CMDSHOW hWnd @ CALL ShowWindow 2 PRINT
+ hWnd @ CALL UpdateWindow 1 PRINT
+;
+
+: TestWin
+ InitInstance
+ BEGIN
+  # 0 # 0 # 0 msg CALL GetMessage 4
+ WHILE
+  msg CALL TranslateMessage 1 DROP
+  msg CALL DispatchMessage 1 DROP
+ REPEAT
+;
+
+# A1 PRINT
+
+InitInstance
+
+# FFF PRINT
+
+  
+
+ 

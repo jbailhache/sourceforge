@@ -1,0 +1,18 @@
+# A1 PRINT 
+RESTORECORE> core1
+: RC " core1" RESTORECORE ;
+# A2 PRINT
+REM --- RC ---
+: C1 " core1" ;
+# A3 PRINT
+C1 RESTORECORE
+# A4 PRINT
+# 3 # 5 T+ PRINT
+# 111 PRINT
+: T+ + ;
+# 222 PRINT
+: SC " core1" SAVECORE ;
+# 333 PRINT
+SC
+REM --- SAVECORE> core1 ---
+# FFF PRINT
